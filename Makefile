@@ -5,8 +5,8 @@ BACKEND_DIR  = ./backend_go
 build_backend:
 	@cd ${BACKEND_DIR} && go build -o ./bin/FoodBank
 
-run_backend:
-	@cd $(BACKEND_DIR) && go run main.go
+run_backend: build_backend
+	@cd ${BACKEND_DIR}/bin && ./FoodBank
 
 test-backend:
 	@cd $(BACKEND_DIR) && go test -v ./...
