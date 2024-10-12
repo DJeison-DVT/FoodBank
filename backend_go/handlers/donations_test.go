@@ -52,3 +52,96 @@ func TestProcessDonation_InvalidData(t *testing.T) {
 		t.Errorf("Expected an error, got none")
 	}
 }
+
+// Additional test cases
+
+func TestProcessDonation_MissingDetails(t *testing.T) {
+	database.DB = setupTestDB()
+
+	donation := &models.Donation{
+		Type: "medicine",
+	}
+
+	_, err := ProcessDonation(donation)
+	if err == nil {
+		t.Errorf("Expected error due to missing details, got none")
+	}
+}
+
+func TestProcessDonation_EmptyType(t *testing.T) {
+	database.DB = setupTestDB()
+
+	donation := &models.Donation{
+		Type:    "",
+		Details: "Blankets",
+	}
+
+	_, err := ProcessDonation(donation)
+	if err == nil {
+		t.Errorf("Expected error due to missing type, got none")
+	}
+}
+
+func TestProcessDonation_VeryLongDetails(t *testing.T) {
+	database.DB = setupTestDB()
+
+	longDetails := "A" + string(make([]byte, 5000)) // Large details
+	donation := &models.Donation{
+		Type:    "food",
+		Details: longDetails,
+	}
+
+	savedDonation, err := ProcessDonation(donation)
+	if err != nil {
+		t.Errorf("Expected no error for long details, got %v", err)
+	}
+
+	if savedDonation.Details != longDetails {
+		t.Errorf("Expected long details to be saved, got %v", savedDonation.Details)
+	}
+
+	// Clean up
+	database.DB.Unscoped().Delete(&models.Donation{}, "id = ?", savedDonation.ID)
+}
+
+func TestProcessDonation_ValidMedicine(t *testing.T) {
+	database.DB = setupTestDB()
+
+	donation := &models.Donation{
+		Type:    "medicine",
+		Details: "First aid kit",
+	}
+
+	savedDonation, err := ProcessDonation(donation)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	if savedDonation.Type != "medicine" || savedDonation.Details != "First aid kit" {
+		t.Errorf("Expected medicine donation, got %v", savedDonation)
+	}
+
+	// Clean up
+	database.DB.Unscoped().Delete(&models.Donation{}, "id = ?", savedDonation.ID)
+}
+
+func TestProcessDonation_ValidClothing(t *testing.T) {
+	database.DB = setupTestDB()
+
+	donation := &models.Donation{
+		Type:    "clothing",
+		Details: "Winter jackets",
+	}
+
+	savedDonation, err := ProcessDonation(donation)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	if savedDonation.Type != "clothing" || savedDonation.Details != "Winter jackets" {
+		t.Errorf("Expected clothing donation, got %v", savedDonation)
+	}
+
+	// Clean up
+	database.DB.Unscoped().Delete(&models.Donation{}, "id = ?", savedDonation.ID)
+}
