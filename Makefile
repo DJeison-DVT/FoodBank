@@ -8,7 +8,7 @@ build_backend:
 run_backend: build_backend
 	@cd ${BACKEND_DIR}/bin && ./FoodBank
 
-test-backend:
+test_backend:
 	@cd $(BACKEND_DIR) && go test -v ./...
 
 
