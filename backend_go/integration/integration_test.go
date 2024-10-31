@@ -3,20 +3,37 @@ package integration
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"testing"
 
-	"github.com/DJeison-DVT/FoodBank/database"
-	"github.com/DJeison-DVT/FoodBank/handlers"
-	"github.com/DJeison-DVT/FoodBank/models"
+	"backend_go/config"
+	"backend_go/database"
+	"backend_go/handlers"
+	"backend_go/models"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
+func TestMain(m *testing.M) {
+	envPath := filepath.Join("..", ".env")
+	if err := config.LoadConfig(envPath); err != nil {
+		log.Fatalf("Failed to load config in tests: %v", err)
+	}
+
+	// Run tests
+	m.Run()
+}
+
 func setupIntegrationTestDB() *gorm.DB {
-	dsn := "postgresql://postgres:<password>@localhost:5432/testdb?sslmode=disable"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	dsn := config.DatabaseURL
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	})
 	if err != nil {
 		panic("failed to connect to test database")
 	}

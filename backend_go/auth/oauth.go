@@ -5,7 +5,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/DJeison-DVT/FoodBank/config"
+	"backend_go/config"
+
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )

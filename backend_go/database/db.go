@@ -3,8 +3,9 @@ package database
 import (
 	"log"
 
-	"github.com/DJeison-DVT/FoodBank/config"
-	"github.com/DJeison-DVT/FoodBank/models"
+	"backend_go/config"
+	"backend_go/models"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

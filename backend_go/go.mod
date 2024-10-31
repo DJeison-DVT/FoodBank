@@ -1,4 +1,4 @@
-module github.com/DJeison-DVT/FoodBank
+module backend_go
 
 go 1.23
 

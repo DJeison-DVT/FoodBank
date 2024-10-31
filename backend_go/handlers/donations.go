@@ -5,8 +5,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/DJeison-DVT/FoodBank/database"
-	"github.com/DJeison-DVT/FoodBank/models"
+	"backend_go/database"
+	"backend_go/models"
 )
 
 func ProcessDonation(donation *models.Donation) (*models.Donation, error) {

@@ -1,18 +1,37 @@
 package handlers
 
 import (
+	"fmt"
+	"log"
+	"path/filepath"
 	"testing"
 
-	"github.com/DJeison-DVT/FoodBank/config"
-	"github.com/DJeison-DVT/FoodBank/database"
-	"github.com/DJeison-DVT/FoodBank/models"
+	"backend_go/config"
+	"backend_go/database"
+	"backend_go/models"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
+
+func TestMain(m *testing.M) {
+	envPath := filepath.Join("..", ".env")
+	if err := config.LoadConfig(envPath); err != nil {
+		log.Fatalf("Failed to load config in tests: %v", err)
+	}
+
+	fmt.Println(config.DatabaseURL)
+
+	// Run tests
+	m.Run()
+}
 
 func setupTestDB() *gorm.DB {
 	dsn := config.DatabaseURL
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent),
+	})
 	if err != nil {
 		panic("failed to connect to test database")
 	}

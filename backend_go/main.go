@@ -4,13 +4,17 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/DJeison-DVT/FoodBank/auth"
-	"github.com/DJeison-DVT/FoodBank/database"
-	"github.com/DJeison-DVT/FoodBank/handlers"
+	"backend_go/auth"
+	"backend_go/config"
+	"backend_go/database"
+	"backend_go/handlers"
 )
 
 func main() {
-	// Initialize the database connection
+	if err := config.LoadConfig(""); err != nil {
+		log.Fatalf("Failed to load config: %v", err)
+	}
+
 	database.ConnectDB()
 
 	mux := http.NewServeMux()
