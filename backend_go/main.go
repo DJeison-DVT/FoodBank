@@ -15,6 +15,9 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
+	// update google oauth config with the correct redirect URL
+	auth.UpdateGoogleOAuthConfig()
+
 	database.ConnectDB()
 
 	mux := http.NewServeMux()

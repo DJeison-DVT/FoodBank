@@ -20,6 +20,12 @@ var googleOauthConfig = &oauth2.Config{
 	Endpoint:     google.Endpoint,
 }
 
+func UpdateGoogleOAuthConfig() {
+	googleOauthConfig.ClientID = config.GoogleClientID
+	googleOauthConfig.ClientSecret = config.GoogleClientSecret
+	googleOauthConfig.RedirectURL = config.GoogleRedirectURL
+}
+
 // HandleLogin initiates the Google OAuth2 login process
 func HandleLogin(w http.ResponseWriter, r *http.Request) {
 	url := googleOauthConfig.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
@@ -48,6 +54,9 @@ func HandleCallback(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to fetch user info", http.StatusBadRequest)
 		return
 	}
+
+	// Join userInfo and Token
+	userInfo["token"] = token
 
 	// Return the user's info as JSON response
 	w.Header().Set("Content-Type", "application/json")
