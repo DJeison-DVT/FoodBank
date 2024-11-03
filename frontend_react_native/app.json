@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "frontend_react_native",
-    "slug": "frontend_react_native",
+    "name": "foodbank",
+    "slug": "foodbank",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",

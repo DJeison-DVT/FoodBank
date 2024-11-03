@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Text, View, StyleSheet, Pressable, Image, TextInput, Button } from "react-native";
+import { GoogleLoginButton } from '../components/GoogleLoginButton';
 
-
-export default function Login({ navigation } : { navigation: any }) {
+export default function Login({ navigation }: { navigation: any }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -13,22 +13,19 @@ export default function Login({ navigation } : { navigation: any }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Iniciar sesión</Text>
-      
-      <Pressable style={styles.pressable}>
-        <Image source={require('../assets/images/google.png')} style={styles.icon} />
-        <Text style={styles.buttonText}>Continuar con Google</Text>
-      </Pressable>
-      
+
+      <GoogleLoginButton />
+
       <Pressable style={styles.pressable}>
         <Image source={require('../assets/images/insta.png')} style={styles.icon} />
         <Text style={styles.buttonText}>Continuar con Instagram</Text>
       </Pressable>
-      
+
       <Pressable style={styles.pressable}>
         <Image source={require('../assets/images/microsoft.png')} style={styles.icon} />
         <Text style={styles.buttonText}>Continuar con Microsoft</Text>
       </Pressable>
-      
+
       <Pressable style={styles.pressable}>
         <Image source={require('../assets/images/apple.png')} style={styles.icon} />
         <Text style={styles.buttonText}>Continuar con Apple</Text>
@@ -36,15 +33,15 @@ export default function Login({ navigation } : { navigation: any }) {
 
       <Text style={styles.orText}>O</Text>
 
-      <TextInput 
-        style={styles.textInput} 
+      <TextInput
+        style={styles.textInput}
         placeholder="Correo electrónico"
         placeholderTextColor="#A0A0A0"
         value={email}
         onChangeText={setEmail}
       />
 
-      <TextInput 
+      <TextInput
         style={styles.textInput}
         placeholder="Contraseña"
         placeholderTextColor="#A0A0A0"
