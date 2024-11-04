@@ -20,6 +20,8 @@ func ConnectDB() {
 	}
 
 	DB.AutoMigrate(&models.Donation{})
+	DB.AutoMigrate(&models.User{})
+	DB.AutoMigrate(&models.UserToken{})
 
 	log.Println("Connected to the database and applied migrations successfully.")
 }

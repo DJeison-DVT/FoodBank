@@ -1,54 +1,96 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
 import { MaterialIcons, FontAwesome } from '@expo/vector-icons';
+import { useFocusEffect } from 'expo-router';
+import { deleteJwtToken } from '@/helpers/auth';
 
-export default function Donaciones() {
+interface Donation {
+  ID: number;
+  CreatedAt: string;
+  UpdatedAt: string;
+  DeletedAt: string | null;
+  Type: string;
+  Details: string;
+  OrderID: number;
+}
+
+export default function Donaciones({ navigation }: any) {
+  const [donations, setDonations] = useState<Donation[]>([]);
+
+
+  const fetchDonations = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/donations");
+      const data: Donation[] = await response.json();
+      setDonations(data);
+    } catch (error) {
+      console.error("Error fetching donations:", error);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchDonations();
+    }, [])
+  );
+
+
+  // Render each donation card
+  const renderDonation = ({ item, index }: { item: Donation; index: number }) => (
+    <TouchableOpacity style={styles.donationCard}>
+      <MaterialIcons name={getIconName(item.Type)} size={48} color="#E63946" />
+      <View style={styles.cardContent}>
+        <Text style={styles.indexText}>#{index + 1}</Text>
+        <TouchableOpacity style={styles.viewButton}>
+          <Text style={styles.viewButtonText}>Ver</Text>
+        </TouchableOpacity>
+        <Text style={styles.itemText}>{item.Type}</Text>
+        <Text style={styles.detailsText}>{item.Details}</Text>
+        <Text style={styles.statusText}>{formatDate(item.CreatedAt)}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  // Determine icon based on donation type
+  const getIconName = (type: string) => {
+    switch (type) {
+      case "Medicine":
+        return "medical-services";
+      case "Food":
+        return "restaurant";
+      case "Clothing":
+        return "checkroom";
+      default:
+        return "help-outline";
+    }
+  };
+
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
+  };
+
   return (
     <View style={styles.container}>
-      <View style={styles.donationCard}>
-        <MaterialIcons name="medical-services" size={48} color="#E63946" />
-        <View style={styles.cardContent}>
-          <TouchableOpacity style={styles.viewButton}>
-            <Text style={styles.viewButtonText}>Ver</Text>
-          </TouchableOpacity>
-          <Text style={styles.itemText}>Medicina</Text>
-          <Text style={styles.statusText}>Favor de revisar los detalles y volver a enviar</Text>
-        </View>
-      </View>
-
-      <View style={styles.donationCard}>
-        <MaterialIcons name="restaurant" size={48} color="#E63946" />
-        <View style={styles.cardContent}>
-          <TouchableOpacity style={styles.viewButton}>
-            <Text style={styles.viewButtonText}>Ver</Text>
-          </TouchableOpacity>
-          <Text style={styles.itemText}>Comida</Text>
-          <Text style={styles.statusText}>Listo para recoger</Text>
-        </View>
-      </View>
-
-      <View style={styles.donationCard}>
-        <MaterialIcons name="checkroom" size={48} color="#E63946" />
-        <View style={styles.cardContent}>
-          <TouchableOpacity style={styles.viewButton}>
-            <Text style={styles.viewButtonText}>Ver</Text>
-          </TouchableOpacity>
-          <Text style={styles.itemText}>Ropa</Text>
-          <Text style={styles.statusText}>En camino, llegando...</Text>
-        </View>
-      </View>
+      <FlatList
+        data={donations}
+        keyExtractor={(item) => item.ID.toString()}
+        renderItem={renderDonation}
+        contentContainerStyle={styles.listContainer}
+      />
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.footerButton}>
           <Text style={styles.footerButtonText}>Donando</Text>
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>4</Text>
+            <Text style={styles.badgeText}>{donations.length}</Text>
           </View>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Donation')}>
           <FontAwesome name="plus" size={24} color="#1D3557" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => deleteJwtToken()}>
           <FontAwesome name="camera" size={24} color="#1D3557" />
         </TouchableOpacity>
       </View>
@@ -59,75 +101,86 @@ export default function Donaciones() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#457B9D',
-    padding: 20,
+    backgroundColor: "#fff",
+  },
+  listContainer: {
+    padding: 16,
   },
   donationCard: {
-    flexDirection: 'row',
-    backgroundColor: '#4A90E2',
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    marginVertical: 8,
+    backgroundColor: "#F1FAEE",
     borderRadius: 8,
-    padding: 15,
-    marginBottom: 15,
-    alignItems: 'center',
   },
   cardContent: {
     flex: 1,
-    marginLeft: 10,
+    marginLeft: 16,
+  },
+  indexText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#457B9D",
   },
   viewButton: {
-    backgroundColor: '#1D3557',
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
+    position: "absolute",
+    right: 0,
+    top: 0,
+    padding: 8,
+    backgroundColor: "#457B9D",
+    borderRadius: 4,
   },
   viewButtonText: {
-    color: '#ECF0F1',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
   },
   itemText: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  detailsText: {
     fontSize: 16,
-    color: '#E63946',
-    marginTop: 5,
-    fontWeight: 'bold',
+    color: "#1D3557",
+    marginVertical: 4,
   },
   statusText: {
-    color: '#ECF0F1',
-    marginTop: 5,
+    fontSize: 14,
+    color: "#6D6875",
+    marginTop: 4,
   },
   footer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    paddingTop: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    borderTopWidth: 1,
+    borderColor: "#ccc",
   },
   footerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1D3557',
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 8,
+    backgroundColor: "#457B9D",
+    borderRadius: 4,
+    marginRight: 16,
   },
   footerButtonText: {
-    color: '#ECF0F1',
-    fontSize: 16,
-    marginRight: 5,
+    color: "#fff",
+    fontWeight: "bold",
   },
   badge: {
-    backgroundColor: '#E63946',
-    borderRadius: 8,
-    paddingHorizontal: 5,
+    backgroundColor: "#E63946",
+    borderRadius: 12,
+    marginLeft: 8,
     paddingVertical: 2,
+    paddingHorizontal: 6,
   },
   badgeText: {
-    color: '#ECF0F1',
-    fontSize: 14,
-    fontWeight: 'bold',
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "bold",
   },
   iconButton: {
-    backgroundColor: '#ECF0F1',
-    padding: 10,
-    borderRadius: 50,
+    marginHorizontal: 8,
   },
 });
