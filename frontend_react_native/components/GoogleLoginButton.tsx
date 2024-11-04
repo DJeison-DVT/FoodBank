@@ -2,11 +2,12 @@ import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import { Image, Pressable, StyleSheet, Text } from 'react-native';
 import { useEffect, useState } from 'react';
+import { TokenResponse } from 'expo-auth-session';
 
 WebBrowser.maybeCompleteAuthSession();
 
 export const GoogleLoginButton = () => {
-    const [accessToken, setAccessToken] = useState('');
+    const [authentication, setAuthentication] = useState<TokenResponse>();
     const [userInfo, setUserInfo] = useState();
 
     const [request, response, promptAsync] = Google.useAuthRequest({
@@ -15,10 +16,44 @@ export const GoogleLoginButton = () => {
 
     useEffect(() => {
         console.log('response', response);
-        if (response && response?.type === 'success' && response?.authentication) {
-            setAccessToken(response.authentication?.accessToken);
+        if (response?.type === 'success' && response.authentication) {
+            setAuthentication(response.authentication);
         }
     }, [response]);
+
+    const registerAccessToken = async () => {
+        try {
+            if (!authentication) {
+                console.error('No authentication data');
+                return;
+            }
+
+            if (!authentication.expiresIn) {
+                console.error('No expiration time');
+                return;
+            }
+
+            const formBody = new URLSearchParams({
+                access_token: authentication.accessToken,
+                expires_in: authentication.expiresIn.toString(),
+                issued_at: authentication.issuedAt.toString(),
+                token_type: authentication.tokenType,
+            }).toString();
+
+            const res = await fetch("http://localhost:8080/register-token", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formBody,
+            });
+
+            const data = await res.json();
+            console.log('User info:', data);
+            setUserInfo(data);
+        } catch (error) {
+            console.error('Error fetching user info:', error);
+        }
+    };
+
 
     return (
         <>
