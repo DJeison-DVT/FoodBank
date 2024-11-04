@@ -12,6 +12,8 @@ type User struct {
 	Email   string `json:"email"`
 	Name    string `json:"name"`
 	Picture string `json:"picture"`
+	Role    string `json:"role"`
+	Address string `json:"address"`
 }
 
 func NewUser(userInfo map[string]interface{}) (User, error) {
@@ -37,5 +39,7 @@ func NewUser(userInfo map[string]interface{}) (User, error) {
 		Email:   *requiredFields["email"],
 		Name:    *requiredFields["name"],
 		Picture: *requiredFields["picture"],
+		Role:    "user",
+		Address: "",
 	}, nil
 }

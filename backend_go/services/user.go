@@ -34,6 +34,14 @@ func CreateUser(userInfo map[string]interface{}) (models.User, error) {
 	return user, nil
 }
 
+func UpdateUser(user models.User) error {
+	if err := database.DB.Save(&user).Error; err != nil {
+		log.Printf("Failed to update user: %v", err)
+		return err
+	}
+	return nil
+}
+
 func UpsertUser(userInfo map[string]interface{}) (models.User, error) {
 	user, err := GetUser(userInfo["id"].(string))
 	if err != nil {
