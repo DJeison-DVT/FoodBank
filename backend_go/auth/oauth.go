@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -28,6 +27,8 @@ func UpdateGoogleOAuthConfig() {
 	googleOauthConfig.ClientSecret = config.GoogleClientSecret
 	googleOauthConfig.RedirectURL = config.GoogleRedirectURL
 }
+
+// API side OAuth2 flow
 
 // HandleLogin initiates the Google OAuth2 login process
 func HandleLogin(w http.ResponseWriter, r *http.Request) {
@@ -84,6 +85,8 @@ func fetchUserInfo(token *oauth2.Token) (map[string]interface{}, error) {
 
 	return userInfo, nil
 }
+
+// Client side OAuth2 flow
 
 func VerifyAccessTokenHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8081")
@@ -173,17 +176,22 @@ func TokenSignInHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userToken, err := services.RegisterAccessToken(user, formFields)
+	_, err = services.RegisterAccessToken(user, formFields)
 	if err != nil {
 		http.Error(w, "Failed to register access token", http.StatusBadRequest)
 		return
 	}
 
-	fmt.Println("User token: ", userToken)
-	fmt.Println("Expiry: ", userToken.ExpiresAt)
-	fmt.Println("User: ", user)
+	jwtToken, err := GenerateJWT(user)
+	if err != nil {
+		http.Error(w, "Failed to generate JWT", http.StatusInternalServerError)
+		return
+	}
 
-	// Send the user information as JSON
+	response := map[string]string{
+		"jwt":     jwtToken,
+		"user_id": user.ID,
+	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(user)
+	json.NewEncoder(w).Encode(response)
 }
