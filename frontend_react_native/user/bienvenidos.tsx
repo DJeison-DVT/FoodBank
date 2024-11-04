@@ -2,13 +2,13 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
-export default function Bienvenido() {
+export default function Bienvenido({ navigation }: { navigation: any }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>BIENVENIDO</Text>
-      
+
       <Text style={styles.subtitle}>Cosas que puedes donar:</Text>
-      
+
       <View style={styles.itemContainer}>
         <MaterialIcons name="restaurant" size={48} color="#E63946" />
         <Text style={styles.itemText}>Comida</Text>
@@ -23,12 +23,12 @@ export default function Bienvenido() {
         <MaterialIcons name="medical-services" size={48} color="#E63946" />
         <Text style={styles.itemText}>Medicina</Text>
       </View>
-      
+
       <Text style={styles.instructionText}>
         Sube una foto del artículo que quieras donar y te indicaremos si es válido o no. ¿List@?
       </Text>
 
-      <TouchableOpacity style={styles.startButton}>
+      <TouchableOpacity style={styles.startButton} onPress={() => navigation.navigate('Donaciones')}>
         <Text style={styles.startButtonText}>Comenzar</Text>
       </TouchableOpacity>
     </View>
