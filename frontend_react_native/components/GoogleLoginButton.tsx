@@ -1,15 +1,14 @@
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import { Image, Pressable, StyleSheet, Text } from 'react-native';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { TokenResponse } from 'expo-auth-session';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { UserData } from '@/helpers/auth';
 
 WebBrowser.maybeCompleteAuthSession();
 
-export const GoogleLoginButton = () => {
-    const [authentication, setAuthentication] = useState<TokenResponse>();
-    const [userInfo, setUserInfo] = useState();
-
+export default function GoogleLoginButton({ navigation, onLogin }: { navigation: any, onLogin: () => void }) {
     const [request, response, promptAsync] = Google.useAuthRequest({
         clientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID,
     });
@@ -17,11 +16,11 @@ export const GoogleLoginButton = () => {
     useEffect(() => {
         console.log('response', response);
         if (response?.type === 'success' && response.authentication) {
-            setAuthentication(response.authentication);
+            registerAccessToken(response.authentication)
         }
     }, [response]);
 
-    const registerAccessToken = async () => {
+    const registerAccessToken = async (authentication: TokenResponse) => {
         try {
             if (!authentication) {
                 console.error('No authentication data');
@@ -47,8 +46,16 @@ export const GoogleLoginButton = () => {
             });
 
             const data = await res.json();
-            console.log('User info:', data);
-            setUserInfo(data);
+            console.log('data', data);
+
+            if (data.jwt) {
+                await AsyncStorage.setItem('jwt_token', data.jwt);
+                await AsyncStorage.setItem('user_id', data.user_id);
+                navigation.navigate('Bienvenido');
+                onLogin();
+            } else {
+                console.error('JWT not received in response');
+            }
         } catch (error) {
             console.error('Error fetching user info:', error);
         }

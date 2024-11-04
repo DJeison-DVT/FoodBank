@@ -1,20 +1,36 @@
 import React, { useState } from 'react';
 import { Text, View, StyleSheet, Pressable, Image, TextInput, Button } from "react-native";
-import { GoogleLoginButton } from '../components/GoogleLoginButton';
+import GoogleLoginButton from '../components/GoogleLoginButton';
+import { fetchUserInfo, UserData } from '@/helpers/auth';
 
-export default function Login({ navigation }: { navigation: any }) {
+export default function Login({ navigation, onLogin }: { navigation: any, onLogin: (user: UserData) => void }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
-    navigation.navigate('Dashboard');
+  const handleLogin = async () => {
+    try {
+      const user = await fetchUserInfo();
+      if (!user) {
+        console.error('No user found');
+        return;
+      }
+      onLogin(user);
+      if (user.role === 'staff') {
+        navigation.navigate('Dashboard');
+      } else {
+        navigation.navigate('Bienvenido');
+      }
+
+    } catch (error) {
+      console.error('Error fetching user info:', error);
+    }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Iniciar sesión</Text>
 
-      <GoogleLoginButton />
+      <GoogleLoginButton navigation={navigation} onLogin={handleLogin} />
 
       <Pressable style={styles.pressable}>
         <Image source={require('../assets/images/insta.png')} style={styles.icon} />
