@@ -1,0 +1,23 @@
+## My Tasks on the Backend
+- Handlers:
+    - donations.
+        - create.
+        - read one.
+        - read all where orderID.
+        - delete.
+    - orders.
+        - create.
+        - read one.
+        - read all where userID.
+        - read all.
+        - patch.
+        - delete (cascade).
+    - accounts.
+        - create.
+        - read one.
+        - read all.
+        - patch.
+        - delete.
+
+- Security Implementations:
+    - 

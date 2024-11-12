@@ -25,6 +25,8 @@ func main() {
 
 	// Donation route for creating a new donation item
 	mux.HandleFunc("/donations", handlers.CreateDonation)
+	mux.HandleFunc("/donations/{id}", handlers.ReadDonation)
+	
 
 	log.Println("Server started on :8080")
 	log.Fatal(http.ListenAndServe(":8080", mux))
