@@ -7,6 +7,7 @@ This Go project requires a `.env` file with Google OAuth keys and a PostgreSQL `
 -   Go (https://golang.org/doc/install)
 -   PostgreSQL database
 -   Google OAuth credentials
+-   minIO
 
 ## Setup
 
@@ -64,3 +65,12 @@ This will execute `go test -v ./...` and run all tests in the project.
 ## License
 
 MIT License (LICENSE)
+
+
+## minIO setup
+
+- sudo docker pull minio/mc
+- sudo docker run -p 9000:9000 --name minio -e "MINIO_ROOT_USER=thisismyaccesskey" -e "MINIO_ROOT_PASSWORD=thisismysecretkey" minio/minio server /data
+- sudo docker start minio
+- sudo docker run --rm minio/mc mb myminio/my-bucket-name
+- 

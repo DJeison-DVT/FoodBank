@@ -29,6 +29,9 @@ func main() {
 	mux.HandleFunc("/donations", handlers.DonationHandler)
 	mux.HandleFunc("/users", handlers.GetUserHandler)
 
+	// Add the new presigned URL generation endpoint
+	mux.HandleFunc("/generate-presigned-url", handlers.GeneratePresignedURL)
+
 	log.Println("Server started on :8080")
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }

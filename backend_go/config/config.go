@@ -12,6 +12,10 @@ var (
 	GoogleClientID     string
 	GoogleClientSecret string
 	GoogleRedirectURL  string
+	S3Endpoint		   string
+	S3Bucket		   string
+	S3AccessKey		   string
+	S3SecretKey		   string
 )
 
 func LoadConfig(envPath string) error {
@@ -35,6 +39,10 @@ func LoadConfig(envPath string) error {
 	GoogleClientID = os.Getenv("GOOGLE_CLIENT_ID")
 	GoogleClientSecret = os.Getenv("GOOGLE_CLIENT_SECRET")
 	GoogleRedirectURL = os.Getenv("GOOGLE_REDIRECT_URL")
+	S3Endpoint = os.Getenv("S3_ENDPOINT")
+	S3Bucket = os.Getenv("S3_BUCKET")
+	S3AccessKey = os.Getenv("S3_ACCESS_KEY")
+	S3SecretKey = os.Getenv("S3_SECRET_KEY")
 
 	return nil
 }

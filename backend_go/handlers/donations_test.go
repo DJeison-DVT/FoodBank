@@ -104,7 +104,7 @@ func TestProcessDonation_EmptyType(t *testing.T) {
 func TestProcessDonation_VeryLongDetails(t *testing.T) {
 	database.DB = setupTestDB()
 
-	longDetails := "A" + string(make([]byte, 5000)) // Large details
+	longDetails := "A" + strings.Repeat("B", 5000)
 	donation := &models.Donation{
 		Type:    "food",
 		Details: longDetails,
