@@ -8,6 +8,9 @@ import (
 	"backend_go/database"
 	"backend_go/models"
 	"backend_go/services"
+
+	"io"
+	"fmt"
 )
 
 func ProcessDonation(donation *models.Donation) (*models.Donation, error) {
@@ -45,25 +48,48 @@ func DonationHandler(w http.ResponseWriter, r *http.Request) {
 
 	case http.MethodPost:
 		var donation models.Donation
-		if err := json.NewDecoder(r.Body).Decode(&donation); err != nil {
-			http.Error(w, "Invalid request payload", http.StatusBadRequest)
+
+		// Read the body into a variable for debugging
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, "Error reading request body", http.StatusInternalServerError)
+			return
+		}
+		defer r.Body.Close() // Close the body after reading
+
+		// Log the raw body for debugging purposes
+		fmt.Println("Received request body:", string(body))
+
+		// Now decode the JSON
+		if err := json.Unmarshal(body, &donation); err != nil {
+			http.Error(w, "Invalid request payload: "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
+		// Ensure Images is a valid array of strings
+		if donation.Images == nil {
+			donation.Images = []string{} // Initialize as an empty array if nil
+		}
+
+		// Log the donation data to ensure Images is properly populated
+		fmt.Println("Processed donation:", donation)
+
+		// Process the donation
 		savedDonation, err := ProcessDonation(&donation)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
+		// Respond with the saved donation
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(savedDonation)
 
 	default:
-		// Method not allowed if it's not GET or POST
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
+
 
 func GetPresignedURL(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8081")

@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native
 import { MaterialIcons, FontAwesome } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { deleteJwtToken } from '@/helpers/auth';
+import CryptoJS from 'crypto-js';
 
 interface Donation {
   ID: number;
@@ -12,17 +13,28 @@ interface Donation {
   Type: string;
   Details: string;
   OrderID: number;
+  // Images: string[];
 }
 
 export default function Donaciones({ navigation }: any) {
   const [donations, setDonations] = useState<Donation[]>([]);
 
+  const encryptionKey = process.env.EXPO_PUBLIC_ENCRYPT_KEY;
+  console.log("encryptionKey:",encryptionKey)
 
   const fetchDonations = async () => {
     try {
       const response = await fetch("http://localhost:8080/donations");
       const data: Donation[] = await response.json();
-      setDonations(data);
+      // Decrypt the donation details, type, and images
+      const decryptedDonations = data.map((donation) => ({
+        ...donation,
+        Type: decryptData(donation.Type),
+        Details: decryptData(donation.Details),
+        // Images: donation.Images.map((imageUrl) => decryptData(imageUrl)), // Decrypt each image URL
+      }));
+
+      setDonations(decryptedDonations);
     } catch (error) {
       console.error("Error fetching donations:", error);
     }
@@ -33,6 +45,12 @@ export default function Donaciones({ navigation }: any) {
       fetchDonations();
     }, [])
   );
+
+  // Decrypt encrypted data (Details, Type, Image URLs)
+  const decryptData = (encryptedData: string): string => {
+    const bytes = CryptoJS.AES.decrypt(encryptedData, encryptionKey);
+    return bytes.toString(CryptoJS.enc.Utf8); // Convert to UTF-8 string
+  };
 
 
   // Render each donation card

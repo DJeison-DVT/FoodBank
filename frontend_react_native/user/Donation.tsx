@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Button, Alert, StyleSheet, Image, ScrollView, TouchableOpacity } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
+import CryptoJS from 'crypto-js'; // Import CryptoJS for encryption
 
 const Donation = ({ navigation }: any) => {
     const [type, setType] = useState("Medicine");
@@ -23,7 +24,7 @@ const Donation = ({ navigation }: any) => {
             quality: 1,
             selectionLimit: 5, // Limit the number of images to select
         });
-
+        
         if (!result.canceled && result.assets && result.assets.length > 0) {
             // Add selected images to the state array
             const imageUris = result.assets.map((asset: any) => asset.uri);
@@ -37,18 +38,29 @@ const Donation = ({ navigation }: any) => {
             return;
         }
 
+        // Encrypt the donation data
+        const encryptionKey = process.env.EXPO_PUBLIC_ENCRYPT_KEY;  // Use a strong key here
+        const encryptedDetails = CryptoJS.AES.encrypt(details, encryptionKey).toString();
+        const encryptedType = CryptoJS.AES.encrypt(type, encryptionKey).toString();
+
+        // Encrypt all image URLs
+        const encryptedImages = selectedImages.map((imageUri) =>
+            CryptoJS.AES.encrypt(imageUri, encryptionKey).toString()
+        );
+
         const donationData = {
-            Type: type,
-            Details: details,
-            // Images: selectedImages, // Send all selected images
+            Type: encryptedType,
+            Details: encryptedDetails,
+            Images: encryptedImages, // Encrypted image URLs
         };
         console.log("Donation", JSON.stringify(donationData));
 
         try {
             // You can upload images to S3 here or send URLs to backend after uploading
             const uploadedImageUrls = await uploadImagesToS3(selectedImages);
-            console.log("uploadedImageUrls:",uploadedImageUrls)
-            // donationData.Images = uploadedImageUrls; // Set the uploaded image URLs
+            donationData.Images = uploadedImageUrls.map((url) =>
+                CryptoJS.AES.encrypt(url, encryptionKey).toString()
+            ); // Encrypt the uploaded image URLs
 
             const response = await fetch("http://localhost:8080/donations", {
                 method: "POST",
@@ -89,7 +101,7 @@ const Donation = ({ navigation }: any) => {
     
             const presignedUrl = await presignedUrlResponse.json();
             const uploadUrl = presignedUrl.url; // This is the presigned URL
-            console.log("uploadUrl:",uploadUrl )
+            console.log("uploadUrl:", uploadUrl)
             
             // Upload the image to S3 using the presigned URL
             const response = await fetch(uploadUrl, {
@@ -111,7 +123,6 @@ const Donation = ({ navigation }: any) => {
     
         return uploadedUrls;
     };
-    
 
     const removeImage = (uri: string) => {
         setSelectedImages(prevImages => prevImages.filter(imageUri => imageUri !== uri));
