@@ -3,14 +3,22 @@ import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView } from 'rea
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import Footer from './footer';
 
-// Define the type for navigation screens
 type RootStackParamList = {
   Dashboard: undefined;
   Pickup: undefined;
+  Historial: undefined;
+  VerDonacion: { user: any };
 };
 
 const Dashboard = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+  const users = [
+    { label: 'Medicina', status: 'Revisar' },
+    { label: 'Medicina', status: 'Revisar', additionalLabels: ['Ropa', 'Comida'] },
+    { label: 'Comida', status: 'Recoger' },
+    { label: 'Ropa', status: 'Recoger' },
+  ];
 
   const reviewCount = users.filter(user => user.status === 'Revisar').length;
   const pickUpCount = users.filter(user => user.status === 'Recoger').length;
@@ -19,15 +27,21 @@ const Dashboard = () => {
     navigation.navigate(screen);
   };
 
+  const handleReviewPress = (user: any) => {
+    navigation.navigate('VerDonacion', { user }); // Navegación con parámetros
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* User List Items */}
         {users.filter(user => user.status === 'Revisar').map((user, index) => (
           <View key={index} style={styles.userItem}>
             <Image source={{ uri: 'https://via.placeholder.com/100' }} style={styles.image} />
             <View style={styles.userDetails}>
-              <TouchableOpacity style={styles.reviewButton}>
+              <TouchableOpacity
+                style={styles.reviewButton}
+                onPress={() => handleReviewPress(user)}
+              >
                 <Text style={styles.buttonText}>Revisar</Text>
               </TouchableOpacity>
               <Text style={styles.userLabel}>{user.label}</Text>
@@ -39,18 +53,10 @@ const Dashboard = () => {
         ))}
       </ScrollView>
 
-      {/* Footer Component */}
       <Footer reviewCount={reviewCount} pickUpCount={pickUpCount} setCurrentScreen={handleNavigation} />
     </View>
   );
 };
-
-const users = [
-  { label: 'Medicina', status: 'Revisar' },
-  { label: 'Medicina', status: 'Revisar', additionalLabels: ['Ropa', 'Comida'] },
-  { label: 'Comida', status: 'Recoger' },
-  { label: 'Ropa', status: 'Recoger' },
-];
 
 const styles = StyleSheet.create({
   container: {

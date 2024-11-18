@@ -7,6 +7,7 @@ import Footer from './footer';
 type RootStackParamList = {
   Dashboard: undefined;
   Pickup: undefined;
+  Historial: undefined;
 };
 
 const Pickup = () => {

@@ -5,6 +5,9 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Login from './login';
 import Dashboard from '../staff/dashboard'; 
 import Pickup from '../staff/recoger';
+import Historial from '../staff/historial';
+import VerDonacion from '../staff/verDonacion';
+import DetalleDonacion from '../staff/detalleDonacion';
 
 const Stack = createStackNavigator();
 
@@ -26,6 +29,21 @@ function App() {
         <Stack.Screen 
           name="Pickup" 
           component={Pickup} 
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen 
+          name="Historial" 
+          component={Historial} 
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen 
+          name="VerDonacion" 
+          component={VerDonacion} 
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen 
+          name="DetalleDonacion" 
+          component={DetalleDonacion} 
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

@@ -1,10 +1,11 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 type FooterProps = {
   reviewCount: number;
   pickUpCount: number;
-  setCurrentScreen: (screen: 'Dashboard' | 'Pickup') => void;
+  setCurrentScreen: (screen: 'Dashboard' | 'Pickup' | 'Historial') => void;
 };
 
 export default function Footer({ reviewCount, pickUpCount, setCurrentScreen }: FooterProps) {
@@ -17,6 +18,9 @@ export default function Footer({ reviewCount, pickUpCount, setCurrentScreen }: F
       <TouchableOpacity style={styles.footerButton} onPress={() => setCurrentScreen('Pickup')}>
         <Text style={styles.buttonText}>Recoger</Text>
         <Text style={styles.badge}>{pickUpCount}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.footerButton} onPress={() => setCurrentScreen('Historial')}>
+        <Icon name="history" size={24} color="#fff" />
       </TouchableOpacity>
     </View>
   );
