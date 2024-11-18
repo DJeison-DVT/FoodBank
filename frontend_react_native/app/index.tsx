@@ -6,6 +6,9 @@ import { fetchUserInfo, UserData } from '@/helpers/auth';
 import Login from './login';
 import Dashboard from '../staff/dashboard';
 import Pickup from '../staff/recoger';
+import Historial from '../staff/historial';
+import VerDonacion from '../staff/verDonacion';
+import DetalleDonacion from '../staff/detalleDonacion';
 
 import Bienvenido from '@/user/bienvenidos';
 import Donaciones from '@/user/donaciones';
@@ -25,6 +28,21 @@ function StaffStack() {
       <Stack.Screen
         name="Pickup"
         component={Pickup}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Historial"
+        component={Historial}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="VerDonacion"
+        component={VerDonacion}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="DetalleDonacion"
+        component={DetalleDonacion}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
@@ -62,26 +80,19 @@ function App() {
   const [user, setUser] = React.useState<UserData | null>(null);
   const [loading, setLoading] = React.useState(true);
 
-
   const handleLogin = (user: UserData) => {
     setUser(user);
   };
 
   React.useEffect(() => {
-    // Check if user is already logged in
     fetchUserInfo().then((userData) => {
       if (userData) {
         setUser(userData);
       }
-      // go to staff or user screen
-      console.log('userData', userData);
-
-
-      setLoading(false); // Stop loading once the fetch is complete
+      setLoading(false);
     });
   }, []);
 
-  // Show a loading screen while checking the user's login status
   if (loading) {
     return null;
   }
@@ -95,7 +106,6 @@ function App() {
           <UserStack />
         )
       ) : (
-        // Show Login screen if user is not logged in
         <Stack.Navigator>
           <Stack.Screen name="Login" options={{ headerShown: false }}>
             {props => <Login {...props} onLogin={handleLogin} />}
