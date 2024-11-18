@@ -30,8 +30,7 @@ const DetalleDonacion = () => {
           <Image source={{ uri: 'https://via.placeholder.com/60' }} style={styles.thumbnail} />
         </TouchableOpacity>
       </View>
-
-      {/* Opciones */}
+      
       <View style={styles.optionsContainer}>
         <TouchableOpacity style={styles.option}>
           <Text style={styles.optionText}>Comida</Text>
