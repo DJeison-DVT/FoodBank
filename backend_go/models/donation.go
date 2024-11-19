@@ -11,3 +11,4 @@ type Donation struct {
 	Images  []string `gorm:"type:jsonb"`
 	OrderID uint
 }
+

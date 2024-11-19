@@ -37,24 +37,20 @@ const Donation = ({ navigation }: any) => {
             Alert.alert("Error", "Please fill all fields.");
             return;
         }
-
         // Encrypt the donation data
         const encryptionKey = process.env.EXPO_PUBLIC_ENCRYPT_KEY;  // Use a strong key here
         const encryptedDetails = CryptoJS.AES.encrypt(details, encryptionKey).toString();
         const encryptedType = CryptoJS.AES.encrypt(type, encryptionKey).toString();
-
         // Encrypt all image URLs
         const encryptedImages = selectedImages.map((imageUri) =>
             CryptoJS.AES.encrypt(imageUri, encryptionKey).toString()
         );
-
         const donationData = {
             Type: encryptedType,
             Details: encryptedDetails,
             Images: encryptedImages, // Encrypted image URLs
         };
         console.log("Donation", JSON.stringify(donationData));
-
         try {
             // You can upload images to S3 here or send URLs to backend after uploading
             const uploadedImageUrls = await uploadImagesToS3(selectedImages);
