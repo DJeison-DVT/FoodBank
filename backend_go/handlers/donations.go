@@ -10,7 +10,6 @@ import (
 	"backend_go/services"
 
 	"io"
-	"fmt"
 )
 
 func ProcessDonation(donation *models.Donation) (*models.Donation, error) {
@@ -26,68 +25,54 @@ func ProcessDonation(donation *models.Donation) (*models.Donation, error) {
 }
 
 func DonationHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+    w.Header().Set("Access-Control-Allow-Origin", "*")
+    w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+    w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
-	if r.Method == http.MethodOptions {
-		w.WriteHeader(http.StatusOK)
-		return
-	}
+    if r.Method == http.MethodOptions {
+        w.WriteHeader(http.StatusOK)
+        return
+    }
 
-	switch r.Method {
-	case http.MethodGet:
-		var donations []models.Donation
-		if err := database.DB.Find(&donations).Error; err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+    switch r.Method {
+    case http.MethodGet:
+        var donations []models.Donation
+        if err := database.DB.Find(&donations).Error; err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
+        json.NewEncoder(w).Encode(donations)
 
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(donations)
+    case http.MethodPost:
+        var donation models.Donation
+        body, err := io.ReadAll(r.Body)
+        if err != nil {
+            http.Error(w, "Error reading request body", http.StatusInternalServerError)
+            return
+        }
+        defer r.Body.Close()
 
-	case http.MethodPost:
-		var donation models.Donation
+        if err := json.Unmarshal(body, &donation); err != nil {
+            http.Error(w, "Invalid JSON payload: "+err.Error(), http.StatusBadRequest)
+            return
+        }
 
-		// Read the body into a variable for debugging
-		body, err := io.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, "Error reading request body", http.StatusInternalServerError)
-			return
-		}
-		defer r.Body.Close() // Close the body after reading
+        if donation.Images == nil {
+            donation.Images = json.RawMessage("[]")
+        }
 
-		// Log the raw body for debugging purposes
-		fmt.Println("Received request body:", string(body))
+        savedDonation, err := ProcessDonation(&donation)
+        if err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
 
-		// Now decode the JSON
-		if err := json.Unmarshal(body, &donation); err != nil {
-			http.Error(w, "Invalid request payload: "+err.Error(), http.StatusBadRequest)
-			return
-		}
+        w.Header().Set("Content-Type", "application/json")
+        json.NewEncoder(w).Encode(savedDonation)
 
-		// Ensure Images is a valid array of strings
-		if donation.Images == nil {
-			donation.Images = []string{} // Initialize as an empty array if nil
-		}
-
-		// Log the donation data to ensure Images is properly populated
-		fmt.Println("Processed donation:", donation)
-
-		// Process the donation
-		savedDonation, err := ProcessDonation(&donation)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		// Respond with the saved donation
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(savedDonation)
-
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
+    default:
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+    }
 }
 
 
