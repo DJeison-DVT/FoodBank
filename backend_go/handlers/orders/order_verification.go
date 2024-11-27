@@ -37,7 +37,7 @@ func OrderVerificationHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleSetOrderAsWaitingForVerification(w http.ResponseWriter, user models.User) {
-	order, _, err := services.GetUserActiveOrder(user.ID)
+	order, err := services.GetUserActiveOrder(user.ID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

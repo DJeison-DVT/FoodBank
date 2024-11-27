@@ -16,15 +16,26 @@ func GetOrder(orderID uint) (models.Order, error) {
 	return order, nil
 }
 
-func GetVerificationPendingOrders() ([]models.Order, error) {
+func getPendingOrdersByStatus(status models.OrderStatus) ([]models.Order, error) {
 	var orders []models.Order
 
-	if err := database.DB.Preload("Donations").Where("orders.status = ?", models.StatusNeedsToBeVerified).
-		Find(&orders).Error; err != nil {
+	if err := database.DB.Where("status = ?", status).Find(&orders).Error; err != nil {
 		return nil, err
 	}
 
 	return orders, nil
+}
+
+func GetVerificationPendingOrders() ([]models.Order, error) {
+	return getPendingOrdersByStatus(models.StatusNeedsToBeVerified)
+}
+
+func GetSchedulePendingOrders() ([]models.Order, error) {
+	return getPendingOrdersByStatus(models.StatusVerified)
+}
+
+func GetPickupPendingOrders() ([]models.Order, error) {
+	return getPendingOrdersByStatus(models.StatusScheduled)
 }
 
 func CreateOrder(userID string) (models.Order, error) {
@@ -40,33 +51,31 @@ func CreateOrder(userID string) (models.Order, error) {
 	return order, nil
 }
 
-func GetUserActiveOrder(userID string) (models.Order, []models.Donation, error) {
+func GetUserActiveOrder(userID string) (models.Order, error) {
 	var order models.Order
-	var donations []models.Donation
 
-	err := database.DB.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Where("user_id = ? AND status != ?", userID, models.StatusPickedUp).
-			First(&order).Error; err != nil {
-			return err
-		}
-
-		if err := tx.Where("order_id = ?", order.ID).Find(&donations).Error; err != nil {
-			return err
-		}
-
-		return nil
-	})
+	err := database.DB.
+		Preload("Donations"). // Preloads the Donations relationship
+		Where("user_id = ? AND status != ?", userID, models.StatusPickedUp).
+		First(&order).Error
 
 	if err != nil {
-		return models.Order{}, nil, err
+		return models.Order{}, err
 	}
 
-	return order, donations, nil
+	return order, nil
 }
 
 func GetCompletedOrders(userId string) ([]models.Order, error) {
 	var orders []models.Order
-	if err := database.DB.Where("status = ?", models.StatusPickedUp).Find(&orders).Error; err != nil {
+
+	query := database.DB.Preload("Donations")
+
+	if userId != "" {
+		query = query.Where("user_id = ?", userId)
+	}
+
+	if err := query.Where("status = ?", models.StatusPickedUp).Find(&orders).Error; err != nil {
 		return orders, err
 	}
 

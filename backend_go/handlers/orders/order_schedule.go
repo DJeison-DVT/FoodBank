@@ -2,13 +2,15 @@ package orders
 
 import (
 	"backend_go/handlers"
+	"backend_go/models"
 	"backend_go/services"
+	"encoding/json"
 	"net/http"
 )
 
 func OrderScheduleHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
 	if r.Method == http.MethodOptions {
@@ -28,10 +30,24 @@ func OrderScheduleHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if user.Role != "staff" {
-		handlers.RespondWithError(w, http.StatusForbidden, "Only staff can schedule orders")
+	if user.Role == "staff" {
+		switch r.Method {
+		case http.MethodPost:
+			scheduleOrder(w, r)
+		case http.MethodGet:
+			orders, err := services.GetSchedulePendingOrders()
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			if err := json.NewEncoder(w).Encode(orders); err != nil {
+				http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			}
+		}
 	} else {
-		scheduleOrder(w, r)
+		handlers.RespondWithError(w, http.StatusForbidden, "Only staff can schedule orders")
 	}
 }
 
@@ -59,6 +75,11 @@ func scheduleOrder(w http.ResponseWriter, r *http.Request) {
 	order, err := services.GetOrder(payload.OrderID)
 	if err != nil {
 		handlers.RespondWithError(w, http.StatusInternalServerError, "Order not found")
+		return
+	}
+
+	if order.Status != models.StatusVerified {
+		handlers.RespondWithError(w, http.StatusBadRequest, "Order must be verified before scheduling")
 		return
 	}
 

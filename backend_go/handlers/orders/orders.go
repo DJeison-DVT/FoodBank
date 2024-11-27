@@ -1,7 +1,6 @@
 package orders
 
 import (
-	"backend_go/models"
 	"backend_go/services"
 	"encoding/json"
 	"net/http"
@@ -53,22 +52,14 @@ func OrderHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleActiveOrderGet(w http.ResponseWriter, userID string) {
-	order, donations, err := services.GetUserActiveOrder(userID)
+	order, err := services.GetUserActiveOrder(userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	response := struct {
-		Order     models.Order      `json:"order"`
-		Donations []models.Donation `json:"donations"`
-	}{
-		Order:     order,
-		Donations: donations,
-	}
-
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(response); err != nil {
+	if err := json.NewEncoder(w).Encode(order); err != nil {
 		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 	}
 }
