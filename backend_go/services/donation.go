@@ -31,7 +31,19 @@ func GetPresignedURL(w http.ResponseWriter, r *http.Request) {
 
 func ProcessDonation(donation *models.Donation) (*models.Donation, error) {
 	if donation.Type == "" || donation.Details == "" {
-		return nil, errors.New("invalid donation data")
+		return nil, errors.New("invalid donation data: Type and Details are required")
+	}
+
+	if donation.OrderID == 0 {
+		return nil, errors.New("invalid donation data: OrderID is required")
+	}
+
+	var order models.Order
+	if err := database.DB.First(&order, donation.OrderID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("invalid OrderID: Order does not exist")
+		}
+		return nil, err
 	}
 
 	if err := database.DB.Create(donation).Error; err != nil {

@@ -34,6 +34,7 @@ func DonationHandler(w http.ResponseWriter, r *http.Request) {
 
 func handleDonationPost(w http.ResponseWriter, r *http.Request) {
 	var donation models.Donation
+
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Error reading request body", http.StatusInternalServerError)
@@ -52,7 +53,7 @@ func handleDonationPost(w http.ResponseWriter, r *http.Request) {
 
 	savedDonation, err := services.ProcessDonation(&donation)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
