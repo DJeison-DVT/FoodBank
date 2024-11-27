@@ -6,9 +6,9 @@ import (
 	"net/http"
 )
 
-func GetUserHandler(w http.ResponseWriter, r *http.Request) {
+func UserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8081")
-	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
 	if r.Method == http.MethodOptions {
@@ -17,10 +17,53 @@ func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userID := r.URL.Query().Get("id")
-	user, err := services.GetUser(userID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if userID == "" {
+		RespondWithError(w, http.StatusBadRequest, "Missing user ID")
 		return
 	}
+
+	// Route based on method
+	switch r.Method {
+	case http.MethodGet:
+		handleGetUser(w, r, userID)
+	case http.MethodPut:
+		handleUpdateUserPickupDetails(w, r, userID)
+	default:
+		RespondWithError(w, http.StatusMethodNotAllowed, "Method not allowed")
+	}
+}
+
+func handleGetUser(w http.ResponseWriter, r *http.Request, userID string) {
+	user, err := services.GetUser(userID)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "Failed to fetch user")
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
+}
+
+func handleUpdateUserPickupDetails(w http.ResponseWriter, r *http.Request, userID string) {
+	user, err := services.GetUser(userID)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "Failed to fetch user")
+		return
+	}
+
+	address := r.URL.Query().Get("address")
+	pickupDetails := r.URL.Query().Get("pickup_details")
+	if address == "" || pickupDetails == "" {
+		RespondWithError(w, http.StatusBadRequest, "Missing address or pickup details")
+		return
+	}
+
+	updatedUser, err := services.UpdateUserPickupDetails(user, address, pickupDetails)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "Failed to update user pickup details")
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(updatedUser)
 }

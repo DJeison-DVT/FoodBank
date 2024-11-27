@@ -27,7 +27,7 @@ func main() {
 
 	// Secure with JWT
 	mux.HandleFunc("/donations", handlers.DonationHandler)
-	mux.HandleFunc("/users", handlers.GetUserHandler)
+	mux.HandleFunc("/users", handlers.UserHandler)
 
 	// Add the new presigned URL generation endpoint
 	mux.HandleFunc("/generate-presigned-url", handlers.GeneratePresignedURL)

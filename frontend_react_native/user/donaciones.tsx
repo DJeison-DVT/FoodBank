@@ -20,7 +20,6 @@ export default function Donaciones({ navigation }: any) {
   const [donations, setDonations] = useState<Donation[]>([]);
 
   const encryptionKey = process.env.EXPO_PUBLIC_ENCRYPT_KEY;
-  console.log("encryptionKey:",encryptionKey)
 
   const fetchDonations = async () => {
     try {
@@ -48,6 +47,10 @@ export default function Donaciones({ navigation }: any) {
 
   // Decrypt encrypted data (Details, Type, Image URLs)
   const decryptData = (encryptedData: string): string => {
+    if (!encryptionKey) {
+      console.error("Encryption key is missing.");
+      return "";
+    }
     const bytes = CryptoJS.AES.decrypt(encryptedData, encryptionKey);
     return bytes.toString(CryptoJS.enc.Utf8); // Convert to UTF-8 string
   };
@@ -107,9 +110,6 @@ export default function Donaciones({ navigation }: any) {
         </TouchableOpacity>
         <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Donation')}>
           <FontAwesome name="plus" size={24} color="#1D3557" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton} onPress={() => deleteJwtToken()}>
-          <FontAwesome name="camera" size={24} color="#1D3557" />
         </TouchableOpacity>
       </View>
     </View>

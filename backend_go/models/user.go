@@ -8,12 +8,14 @@ import (
 
 type User struct {
 	gorm.Model
-	ID      string `json:"id" gorm:"primaryKey"` // Primary key, using Google-provided user ID
-	Email   string `json:"email"`
-	Name    string `json:"name"`
-	Picture string `json:"picture"`
-	Role    string `json:"role"`
-	Address string `json:"address"`
+	ID            string  `json:"id" gorm:"primaryKey"` // Primary key, using Google-provided user ID
+	Email         string  `json:"email"`
+	Name          string  `json:"name"`
+	Picture       string  `json:"picture"`
+	Role          string  `json:"role"`
+	Address       string  `json:"address"`
+	PickupDetails string  `json:"pickup_details"`
+	Orders        []Order `json:"orders"`
 }
 
 func NewUser(userInfo map[string]interface{}) (User, error) {
@@ -35,11 +37,13 @@ func NewUser(userInfo map[string]interface{}) (User, error) {
 
 	// Return a new User instance using validated fields from requiredFields
 	return User{
-		ID:      *requiredFields["id"],
-		Email:   *requiredFields["email"],
-		Name:    *requiredFields["name"],
-		Picture: *requiredFields["picture"],
-		Role:    "user",
-		Address: "",
+		ID:            *requiredFields["id"],
+		Email:         *requiredFields["email"],
+		Name:          *requiredFields["name"],
+		Picture:       *requiredFields["picture"],
+		Role:          "user",
+		Address:       "",
+		PickupDetails: "",
+		Orders:        []Order{},
 	}, nil
 }

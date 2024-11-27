@@ -63,7 +63,7 @@ func TestIntegration_ValidDonation(t *testing.T) {
 
 	req.Header.Set("Content-Type", "application/json")
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handlers.CreateDonation)
+	handler := http.HandlerFunc(handlers.DonationHandler)
 	handler.ServeHTTP(rr, req)
 
 	// Check the status code is 200 OK
@@ -108,7 +108,7 @@ func TestIntegration_InvalidDonation(t *testing.T) {
 
 	req.Header.Set("Content-Type", "application/json")
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(handlers.CreateDonation)
+	handler := http.HandlerFunc(handlers.DonationHandler)
 	handler.ServeHTTP(rr, req)
 
 	// Check the status code is 500 Internal Server Error

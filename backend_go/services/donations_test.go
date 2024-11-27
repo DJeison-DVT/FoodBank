@@ -1,9 +1,10 @@
-package handlers
+package services
 
 import (
 	"fmt"
 	"log"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"backend_go/config"
@@ -103,7 +104,6 @@ func TestProcessDonation_EmptyType(t *testing.T) {
 
 func TestProcessDonation_VeryLongDetails(t *testing.T) {
 	database.DB = setupTestDB()
-
 	longDetails := "A" + strings.Repeat("B", 5000)
 	donation := &models.Donation{
 		Type:    "food",
@@ -163,4 +163,27 @@ func TestProcessDonation_ValidClothing(t *testing.T) {
 
 	// Clean up
 	database.DB.Unscoped().Delete(&models.Donation{}, "id = ?", savedDonation.ID)
+}
+
+func TestProcessDonation_SingleImageUpload(t *testing.T) {
+
+}
+
+func TestProcessDonation_MultipleImageUpload(t *testing.T) {
+	database.DB = setupTestDB()
+
+	donation := &models.Donation{
+		Type:    "medicine",
+		Details: "First aid supplies",
+	}
+
+	// savedDonation, err := ProcessDonation(donation)
+
+	// if err == nil {
+	// t.Error("Expected failure due to missing S3 implementation, but got none")
+	// }
+
+	// if len(savedDonation.Images) > 0 {
+	t.Errorf("Expected multiple images to be saved, but got %v", donation.Images[0])
+	// }
 }

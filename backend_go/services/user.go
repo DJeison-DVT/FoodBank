@@ -61,3 +61,24 @@ func UpsertUser(userInfo map[string]interface{}) (models.User, error) {
 
 	return user, nil
 }
+
+func UpdateUserPickupDetails(user models.User, address, details string) (models.User, error) {
+	user.Address = address
+	user.PickupDetails = details
+
+	if err := database.DB.Save(&user).Error; err != nil {
+		log.Printf("Failed to update user pickup details: %v", err)
+		return models.User{}, err
+	}
+
+	return user, nil
+}
+
+func MakeStaff(user models.User) (models.User, error) {
+	user.Role = "staff"
+	if err := database.DB.Save(&user).Error; err != nil {
+		log.Printf("Failed to update user role: %v", err)
+		return models.User{}, err
+	}
+	return user, nil
+}

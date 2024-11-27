@@ -19,9 +19,17 @@ func ConnectDB() {
 		log.Fatalf("Failed to connect to the database: %v", err)
 	}
 
-	DB.AutoMigrate(&models.Donation{})
-	DB.AutoMigrate(&models.User{})
-	DB.AutoMigrate(&models.UserToken{})
+	ApplicationModels := []interface{}{
+		&models.Donation{},
+		&models.Order{},
+		&models.UserToken{},
+		&models.User{},
+		&models.Order{},
+	}
+	DB.AutoMigrate(ApplicationModels...)
+	if err != nil {
+		log.Fatalf("Failed to apply migrations: %v", err)
+	}
 
 	log.Println("Connected to the database and applied migrations successfully.")
 }
