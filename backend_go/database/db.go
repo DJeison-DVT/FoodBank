@@ -20,12 +20,12 @@ func ConnectDB() {
 	}
 
 	ApplicationModels := []interface{}{
-		&models.Donation{},
-		&models.Order{},
-		&models.UserToken{},
-		&models.User{},
-		&models.Order{},
+		&models.User{},      // Independent model
+		&models.Order{},     // Depends on User
+		&models.Donation{},  // Depends on Order
+		&models.UserToken{}, // Independent model
 	}
+
 	DB.AutoMigrate(ApplicationModels...)
 	if err != nil {
 		log.Fatalf("Failed to apply migrations: %v", err)

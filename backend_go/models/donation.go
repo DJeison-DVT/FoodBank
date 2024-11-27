@@ -11,8 +11,8 @@ type Donation struct {
 	Type    string
 	Details string
 	Images  json.RawMessage `gorm:"type:jsonb"`
-	OrderID uint
-	Status  DonationStatus `gorm:"default:Pending"`
+	OrderID uint            `gorm:"index"`
+	Status  DonationStatus  `gorm:"default:Pending"`
 }
 
 type DonationStatus string
