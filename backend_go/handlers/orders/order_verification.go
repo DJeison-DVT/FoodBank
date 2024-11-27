@@ -43,6 +43,14 @@ func handleSetOrderAsWaitingForVerification(w http.ResponseWriter, user models.U
 		return
 	}
 
+	if order.Status == models.StatusNeedsToBeChecked && services.HasRejectedDonations(&order) {
+		handlers.RespondWithError(w, http.StatusBadRequest, "Order has rejected donations")
+		return
+	} else if order.Status != models.StatusBeingModified && order.Status != models.StatusNeedsToBeChecked {
+		handlers.RespondWithError(w, http.StatusBadRequest, "Order is not being modified")
+		return
+	}
+
 	err = services.UpdateOrderStatus(&order, models.StatusNeedsToBeVerified)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -71,6 +79,11 @@ func handleOrderVerify(w http.ResponseWriter, r *http.Request) {
 	order, err := services.GetOrder(payload.OrderID)
 	if err != nil {
 		handlers.RespondWithError(w, http.StatusBadRequest, "Order not found")
+		return
+	}
+
+	if order.Status != models.StatusNeedsToBeVerified {
+		handlers.RespondWithError(w, http.StatusBadRequest, "Order is not waiting for verification")
 		return
 	}
 

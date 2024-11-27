@@ -131,3 +131,17 @@ func UpdateOrderStatus(order *models.Order, status models.OrderStatus) error {
 	}
 	return nil
 }
+
+func HasRejectedDonations(order *models.Order) bool {
+	donations, err := GetOrderDonations(order.ID)
+	if err != nil {
+		return false
+	}
+
+	for _, donation := range donations {
+		if donation.Status == models.StatusRejected {
+			return true
+		}
+	}
+	return false
+}
