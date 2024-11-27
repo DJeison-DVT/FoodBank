@@ -8,6 +8,7 @@ import (
 	"backend_go/config"
 	"backend_go/database"
 	"backend_go/handlers"
+	"backend_go/handlers/orders"
 )
 
 func main() {
@@ -28,6 +29,13 @@ func main() {
 	// Secure with JWT
 	mux.HandleFunc("/donations", handlers.DonationHandler)
 	mux.HandleFunc("/users", handlers.UserHandler)
+
+	mux.HandleFunc("/orders", orders.OrderHandler)
+	mux.HandleFunc("/orders/history", orders.OrderHistoryHandler)
+	mux.HandleFunc("/orders/verification", orders.OrderVerificationHandler)
+	// Staff Only
+	mux.HandleFunc("/orders/schedule", orders.OrderScheduleHandler)
+	mux.HandleFunc("/orders/pickup", orders.OrderPickupHandler)
 
 	// Add the new presigned URL generation endpoint
 	mux.HandleFunc("/generate-presigned-url", handlers.GeneratePresignedURL)

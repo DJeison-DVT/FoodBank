@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func ActiveOrderHandler(w http.ResponseWriter, r *http.Request) {
+func OrderHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
@@ -23,11 +23,32 @@ func ActiveOrderHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	switch r.Method {
-	case http.MethodGet:
-		handleActiveOrderGet(w, userID)
-	case http.MethodPost:
-		handleActiveOrderPost(w, userID)
+	user, err := services.GetUser(userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if user.Role == "staff" {
+		if r.Method == http.MethodGet {
+			orders, err := services.GetVerificationPendingOrders()
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			if err := json.NewEncoder(w).Encode(orders); err != nil {
+				http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			}
+		}
+	} else {
+		switch r.Method {
+		case http.MethodGet:
+			handleActiveOrderGet(w, userID)
+		case http.MethodPost:
+			handleActiveOrderPost(w, userID)
+		}
 	}
 }
 

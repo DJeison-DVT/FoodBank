@@ -18,8 +18,10 @@ func GetOrder(orderID uint) (models.Order, error) {
 
 func GetVerificationPendingOrders() ([]models.Order, error) {
 	var orders []models.Order
-	if err := database.DB.Where("status = ?", models.StatusNeedsToBeVerified).Find(&orders).Error; err != nil {
-		return orders, err
+
+	if err := database.DB.Preload("Donations").Where("orders.status = ?", models.StatusNeedsToBeVerified).
+		Find(&orders).Error; err != nil {
+		return nil, err
 	}
 
 	return orders, nil
