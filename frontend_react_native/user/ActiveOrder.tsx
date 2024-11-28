@@ -10,6 +10,7 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
   const { user } = route.params;
 
   const encryptionKey = process.env.EXPO_PUBLIC_ENCRYPT_KEY;
+
   const getActiveOrder = async () => {
     try {
       const query = `http://localhost:8080/orders?user_id=${user.id}`;
@@ -20,39 +21,42 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
       });
 
       if (response.ok && response.status === 204) {
+        // Create a new order if no active order exists
         response = await fetch(query, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${await getJwtToken()}`,
           },
-        })
+        });
       }
+
+      if (!response.ok) {
+        console.error('Failed to fetch order:', response.status, response.statusText);
+        return;
+      }
+
       const data: Order = await response.json();
+
+      data.donations = decryptDonations(data.donations);
+
       console.log('Active order:', data);
       setOrder(data);
     } catch (error) {
       console.error('Error fetching active order:', error);
     }
-  }
+  };
 
 
-  // const fetchDonations = async () => {
-  //   try {
-  //     const response = await fetch("http://localhost:8080/donations");
-  //     const data: Donation[] = await response.json();
-  //     // Decrypt the donation details, type, and images
-  //     const decryptedDonations = data.map((donation) => ({
-  //       ...donation,
-  //       Type: decryptData(donation.Type),
-  //       Details: decryptData(donation.Details),
-  //       // Images: donation.Images.map((imageUrl) => decryptData(imageUrl)), // Decrypt each image URL
-  //     }));
+  const decryptDonations = (donations: Donation[]) => {
+    const decryptedDonations = donations.map((donation) => ({
+      ...donation,
+      type: decryptData(donation.type),
+      details: decryptData(donation.details),
+      images: donation.images.map((imageUrl) => decryptData(imageUrl)),
+    }));
 
-  //     setDonations(decryptedDonations);
-  //   } catch (error) {
-  //     console.error("Error fetching donations:", error);
-  //   }
-  // };
+    return decryptedDonations;
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -74,14 +78,14 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
   // Render each donation card
   const renderDonation = ({ item, index }: { item: Donation; index: number }) => (
     <TouchableOpacity style={styles.donationCard}>
-      <MaterialIcons name={getIconName(item.Type)} size={48} color="#E63946" />
+      <MaterialIcons name={getIconName(item.type)} size={48} color="#E63946" />
       <View style={styles.cardContent}>
         <Text style={styles.indexText}>#{index + 1}</Text>
         <TouchableOpacity style={styles.viewButton}>
           <Text style={styles.viewButtonText}>Ver</Text>
         </TouchableOpacity>
-        <Text style={styles.itemText}>{item.Type}</Text>
-        <Text style={styles.detailsText}>{item.Details}</Text>
+        <Text style={styles.itemText}>{item.type}</Text>
+        <Text style={styles.detailsText}>{item.details}</Text>
         <Text style={styles.statusText}>{formatDate(item.CreatedAt)}</Text>
       </View>
     </TouchableOpacity>
@@ -119,7 +123,7 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
   return (
     <View style={styles.container}>
       <FlatList
-        data={order.Donations}
+        data={order.donations}
         keyExtractor={(item) => item.ID.toString()}
         renderItem={renderDonation}
         contentContainerStyle={styles.listContainer}
@@ -129,7 +133,7 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
         <TouchableOpacity style={styles.footerButton}>
           <Text style={styles.footerButtonText}>Donando</Text>
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>{order.Donations?.length || '0'}</Text>
+            <Text style={styles.badgeText}>{order.donations?.length || '0'}</Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Donation')}>

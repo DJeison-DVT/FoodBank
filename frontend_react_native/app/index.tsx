@@ -72,6 +72,7 @@ function UserStack({ user }: { user: UserData }) {
         name="Donation"
         component={Donation}
         options={{ headerShown: false }}
+        initialParams={{ user }}
       />
     </Stack.Navigator>
   );

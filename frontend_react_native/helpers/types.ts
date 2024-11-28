@@ -3,18 +3,18 @@ interface Donation {
 	CreatedAt: string;
 	UpdatedAt: string;
 	DeletedAt: string | null;
-	OrderID: number;
-	Type: string;
-	Details: string;
-	Images: string[];
-	Status: string;
+	order_id: number;
+	type: string;
+	details: string;
+	images: string[];
+	status: string;
 }
 
 interface Order {
 	ID: number;
-	UserID: string;
-	Status: string;
-	Donations: Donation[];
+	user_id: string;
+	status: string;
+	donations: Donation[];
 	VerificationQRCode?: string;
 	PickupDate?: string;
 	PickupTime?: string;
