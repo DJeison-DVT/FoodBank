@@ -15,7 +15,7 @@ type User struct {
 	Role          string  `json:"role"`
 	Address       string  `json:"address"`
 	PickupDetails string  `json:"pickup_details"`
-	Orders        []Order `json:"orders"`
+	Orders        []Order `json:"orders" gorm:"foreignKey:UserID"`
 }
 
 func NewUser(userInfo map[string]interface{}) (User, error) {

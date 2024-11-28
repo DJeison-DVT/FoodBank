@@ -8,6 +8,7 @@ import (
 
 	"crypto/rand"
 	"encoding/base64"
+
 	"golang.org/x/crypto/bcrypt"
 
 	"fmt"
@@ -25,7 +26,11 @@ func GetOrder(orderID uint) (models.Order, error) {
 func getPendingOrdersByStatus(status models.OrderStatus) ([]models.Order, error) {
 	var orders []models.Order
 
-	if err := database.DB.Where("status = ?", status).Find(&orders).Error; err != nil {
+	if err := database.DB.
+		Where("orders.status = ?", status).
+		Preload("Donations").
+		Preload("User").
+		Find(&orders).Error; err != nil {
 		return nil, err
 	}
 
@@ -68,7 +73,7 @@ func GetUserActiveOrder(userID string) (models.Order, error) {
 	if err != nil {
 		return models.Order{}, err
 	}
-	
+
 	return order, nil
 }
 

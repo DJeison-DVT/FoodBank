@@ -7,6 +7,7 @@ import (
 type Order struct {
 	gorm.Model
 	UserID             string      `json:"user_id"` // Foreign key linking to User
+	User               User        `json:"user" gorm:"foreignKey:UserID"`
 	Status             OrderStatus `json:"status" gorm:"default:BeingModified"`
 	Donations          []Donation  `json:"donations"`
 	VerificationQRCode string
