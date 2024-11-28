@@ -239,7 +239,7 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
         return (
           <View style={styles.statusContainer}>
             <Text style={styles.successText}>
-              Estado: ¡La donación ha sido aprobada! Gracias por tu apoyo.
+              Estado: ¡La donación ha sido aprobada! Gracias por tu apoyo, {user.name}. Nuestro personal agendara la recolección pronto.
             </Text>
           </View>
         );
@@ -248,7 +248,9 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
         return (
           <View style={styles.statusContainer}>
             <Text style={styles.infoText}>
-              Estado: La recolección ha sido programada. Por favor, consulta los detalles de recolección.
+              Estado: La recolección ha sido programada.
+              {order.PickupDate && `Fecha de recolección: ${formatDate(order.PickupDate)}`}
+              {order.PickupTime && `Hora de recolección: ${order.PickupTime}`}
             </Text>
           </View>
         );
@@ -297,8 +299,11 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
           <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Donation')} disabled={disabled}>
             <FontAwesome name="plus" size={24} color="#1D3557" />
           </TouchableOpacity>
-        )
-        }
+        )}
+        {/* TODO add user profile */}
+        <TouchableOpacity style={styles.footerButton}>
+          <FontAwesome name="user" size={24} color="#1D3557" />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -307,7 +312,7 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: '#457B9D',
   },
   listContainer: {
     padding: 16,
@@ -327,6 +332,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F8F9FA",
     borderWidth: 1,
     borderColor: "#E9ECEF",
+    marginHorizontal: 16,
   },
   errorText: {
     fontSize: 16,
@@ -430,12 +436,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 8,
-    backgroundColor: "#457B9D",
+    backgroundColor: "#ADD8E6",
     borderRadius: 4,
     marginRight: 16,
   },
   footerButtonText: {
-    color: "#fff",
+    color: "#000",
     fontWeight: "bold",
   },
   badge: {
