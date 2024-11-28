@@ -4,9 +4,11 @@ import { MaterialIcons, FontAwesome } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { deleteJwtToken, getJwtToken } from '@/helpers/auth';
 import CryptoJS from 'crypto-js';
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 export default function ActiveOrder({ route, navigation }: { route: any; navigation: any }) {
   const [order, setOrder] = useState<Order | null>(null);
+  const [disabled, setDisabled] = useState(false);
   const { user } = route.params;
 
   const encryptionKey = process.env.EXPO_PUBLIC_ENCRYPT_KEY;
@@ -74,33 +76,107 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
     return bytes.toString(CryptoJS.enc.Utf8); // Convert to UTF-8 string
   };
 
+  const handleDelete = async (id: number) => {
+    setDisabled(true);
+    try {
+      const query = `http://localhost:8080/donations?id=${id}`;
+      const response = await fetch(query, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${await getJwtToken()}`,
+        },
+      });
 
-  const renderDonation = ({ item, index, navigation }: { item: Donation; index: number; navigation: any }) => (
-    <TouchableOpacity
-      style={styles.donationCard}
-      onPress={() => {
-        console.log('Donation:', item);
-        navigation.navigate('DonationDetailView', { donation: item })
-      }} // Navigate to detailed view
-    >
-      <MaterialIcons
-        name={getIconName(item.type)}
-        size={48}
-        color="#E63946"
-      />
+      if (!response.ok) {
+        console.error('Failed to delete donation:', response.status, response.statusText);
+        return;
+      }
 
-      <View style={styles.cardContent}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.indexText}>#{index + 1}</Text>
+      getActiveOrder();
+    } catch (error) {
+      console.error('Error deleting donation:', error);
+    }
+    setDisabled(false);
+  };
+
+  const handleConfirmOrder = async () => {
+    const query = `http://localhost:8080/orders/verification?user_id=${user.id}`;
+    const response = await fetch(query, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${getJwtToken()}`,
+      },
+
+    });
+
+    if (!response.ok) {
+      console.error('Failed to confirm order:', response.status, response.statusText);
+      return;
+    }
+
+    getActiveOrder();
+  };
+
+
+
+  const renderDonation = ({
+    item,
+    index,
+    navigation,
+    onDelete,
+    deletable,
+  }: {
+    item: Donation;
+    index: number;
+    navigation: any;
+    onDelete: (id: number) => void;
+    deletable: boolean;
+  }) => {
+    const getBackgroundColor = (status: string) => {
+      switch (status) {
+        case "Pending":
+          return "#ADD8E6";
+        case "Approved":
+          return "#C8E6C9"; // Light green for approved
+        case "Rejected":
+          return "#FFCDD2"; // Light red for rejected
+        default:
+          return "#E0E0E0"; // Light gray for unknown statuses
+      }
+    };
+
+    return (
+
+      <TouchableOpacity
+        style={[styles.donationCard, { backgroundColor: getBackgroundColor(item.status) }]}
+        onPress={() => {
+          console.log('Donation:', item);
+          navigation.navigate('DonationDetailView', { donation: item });
+        }} // Navigate to detailed view'
+        disabled={disabled}
+      >
+        <MaterialIcons name={getIconName(item.type)} size={48} color="#E63946" />
+
+        <View style={styles.cardContent}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.indexText}>#{index + 1}</Text>
+
+            {/* Delete Button */}
+            {deletable && (
+              <TouchableOpacity style={styles.deleteButton} onPress={() => onDelete(item.ID)}>
+                <Text style={styles.deleteButtonText}>Eliminar</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Donation Details */}
+          <Text style={styles.itemText}>{item.type}</Text>
+          <Text style={styles.detailsText}>{item.details}</Text>
+          <Text style={styles.statusText}>Creado: {formatDate(item.CreatedAt)}</Text>
         </View>
-
-        {/* Donation Details */}
-        <Text style={styles.itemText}>{item.type}</Text>
-        <Text style={styles.detailsText}>{item.details}</Text>
-        <Text style={styles.statusText}>Created: {formatDate(item.CreatedAt)}</Text>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    )
+  };
 
   // Determine icon based on donation type
   const getIconName = (type: string) => {
@@ -131,14 +207,84 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
     );
   }
 
+  const canBeModified = () => {
+    return order.status == 'BeingModified';
+  }
+
+  const canBeDeleted = () => {
+    return order.status == 'NeedsToBeChecked';
+  }
+
+  const renderStatusComponent = (status: string) => {
+    switch (status) {
+      case "NeedsToBeChecked":
+        return (
+          <View style={styles.statusContainer}>
+            <Text style={styles.errorText}>
+              Estado: La donación contiene artículos inválidos. Por favor, corrige los errores.
+            </Text>
+          </View>
+        );
+
+      case "NeedsToBeVerified":
+        return (
+          <View style={styles.statusContainer}>
+            <Text style={styles.infoText}>
+              Estado: La donación está esperando verificación del personal.
+            </Text>
+          </View>
+        );
+
+      case "Verified":
+        return (
+          <View style={styles.statusContainer}>
+            <Text style={styles.successText}>
+              Estado: ¡La donación ha sido aprobada! Gracias por tu apoyo.
+            </Text>
+          </View>
+        );
+
+      case "Scheduled":
+        return (
+          <View style={styles.statusContainer}>
+            <Text style={styles.infoText}>
+              Estado: La recolección ha sido programada. Por favor, consulta los detalles de recolección.
+            </Text>
+          </View>
+        );
+
+      default:
+        return (
+          <View style={styles.statusContainer}>
+            <Text style={styles.defaultText}>
+              Estado: Desconocido. Por favor, contacta al soporte.
+            </Text>
+          </View>
+        );
+    }
+  };
+
+
   return (
     <View style={styles.container}>
+      {!canBeModified() && (
+        renderStatusComponent(order.status)
+      )}
       <FlatList
         data={order.donations}
-        renderItem={(itemData) => renderDonation({ ...itemData, navigation })}
+        renderItem={(itemData) => renderDonation({ ...itemData, navigation, onDelete: handleDelete, deletable: canBeDeleted() })}
         keyExtractor={(item) => item.ID.toString()}
         contentContainerStyle={styles.listContainer}
       />
+
+      {order.donations.length > 1 && canBeModified() && (
+        <TouchableOpacity
+          style={styles.confirmButton}
+          onPress={handleConfirmOrder}
+        >
+          <Text style={styles.confirmButtonText}>Confirmar Donaciones</Text>
+        </TouchableOpacity>
+      )}
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.footerButton}>
@@ -147,9 +293,12 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
             <Text style={styles.badgeText}>{order.donations?.length || '0'}</Text>
           </View>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Donation')}>
-          <FontAwesome name="plus" size={24} color="#1D3557" />
-        </TouchableOpacity>
+        {canBeModified() && (
+          <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Donation')} disabled={disabled}>
+            <FontAwesome name="plus" size={24} color="#1D3557" />
+          </TouchableOpacity>
+        )
+        }
       </View>
     </View>
   );
@@ -171,6 +320,34 @@ const styles = StyleSheet.create({
     backgroundColor: "#F1FAEE",
     borderRadius: 8,
   },
+  statusContainer: {
+    padding: 16,
+    marginVertical: 8,
+    borderRadius: 8,
+    backgroundColor: "#F8F9FA",
+    borderWidth: 1,
+    borderColor: "#E9ECEF",
+  },
+  errorText: {
+    fontSize: 16,
+    color: "#E63946", // Red for errors
+    fontWeight: "bold",
+  },
+  infoText: {
+    fontSize: 16,
+    color: "#1D3557", // Blue for information
+    fontWeight: "bold",
+  },
+  successText: {
+    fontSize: 16,
+    color: "#2A9D8F", // Green for success
+    fontWeight: "bold",
+  },
+  defaultText: {
+    fontSize: 16,
+    color: "#6C757D", // Gray for unknown statuses
+    fontWeight: "bold",
+  },
   cardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -181,6 +358,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',
+  },
+  confirmButton: {
+    position: 'absolute',
+    bottom: 80, // Just above the footer
+    left: 16,
+    right: 16,
+    backgroundColor: '#457B9D',
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3, // For Android shadow
+  },
+  confirmButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   spinnerText: {
     marginTop: 10,
@@ -256,4 +453,18 @@ const styles = StyleSheet.create({
   iconButton: {
     marginHorizontal: 8,
   },
+  deleteButton: {
+    backgroundColor: '#E63946',
+    borderRadius: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    alignSelf: 'flex-end',
+    marginLeft: 'auto',
+  },
+  deleteButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+
 });
