@@ -7,7 +7,7 @@ import (
 )
 
 func OrderHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8081")
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
@@ -54,6 +54,10 @@ func OrderHandler(w http.ResponseWriter, r *http.Request) {
 func handleActiveOrderGet(w http.ResponseWriter, userID string) {
 	order, err := services.GetUserActiveOrder(userID)
 	if err != nil {
+		if err.Error() == "record not found" {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

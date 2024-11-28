@@ -11,9 +11,11 @@ import VerDonacion from '../staff/verDonacion';
 import DetalleDonacion from '../staff/detalleDonacion';
 
 import Bienvenido from '@/user/bienvenidos';
-import Donaciones from '@/user/donaciones';
+import ActiveOrder from '@/user/ActiveOrder';
 import DatosRecoleccion from '@/user/recoleccion';
 import Donation from '@/user/Donation';
+import DonationDetailView from '@/user/DonationDetailView';
+import Profile from '@/user/Profile';
 
 const Stack = createStackNavigator();
 
@@ -46,10 +48,11 @@ function StaffStack() {
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
+
   );
 }
 
-function UserStack() {
+function UserStack({ user, updateUser }: { user: UserData; updateUser: (user: UserData) => void }) {
   return (
     <Stack.Navigator>
       <Stack.Screen
@@ -64,12 +67,25 @@ function UserStack() {
       />
       <Stack.Screen
         name="Donaciones"
-        component={Donaciones}
+        component={ActiveOrder}
         options={{ headerShown: false }}
+        initialParams={{ user }}
+      />
+      <Stack.Screen
+        name="Profile"
+        component={Profile}
+        options={{ headerShown: false }}
+        initialParams={{ user, updateUser }}
       />
       <Stack.Screen
         name="Donation"
         component={Donation}
+        options={{ headerShown: false }}
+        initialParams={{ user }}
+      />
+      <Stack.Screen
+        name="DonationDetailView"
+        component={DonationDetailView}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
@@ -82,6 +98,11 @@ function App() {
 
   const handleLogin = (user: UserData) => {
     setUser(user);
+  };
+
+  const updateUser = (updatedUser: UserData) => {
+    console.log('updating app user', updatedUser);
+    setUser(updatedUser);
   };
 
   React.useEffect(() => {
@@ -103,7 +124,7 @@ function App() {
         user.role === 'staff' ? (
           <StaffStack />
         ) : (
-          <UserStack />
+          <UserStack user={user} updateUser={updateUser} />
         )
       ) : (
         <Stack.Navigator>

@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Button, Alert, StyleSheet, Image, ScrollView, TouchableOpacity } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
-import CryptoJS from 'crypto-js'; // Import CryptoJS for encryption
+import CryptoJS, { enc } from 'crypto-js'; // Import CryptoJS for encryption
+import { getJwtToken } from '@/helpers/auth';
 
-const Donation = ({ navigation }: any) => {
+export default function Donation({ route, navigation }: { route: any; navigation: any }) {
     const [type, setType] = useState("Medicine");
     const [details, setDetails] = useState("");
+    const { user } = route.params;
     const [selectedImages, setSelectedImages] = useState<string[]>([]); // Track multiple images
 
     const handleImagePick = async () => {
@@ -24,7 +26,7 @@ const Donation = ({ navigation }: any) => {
             quality: 1,
             selectionLimit: 5, // Limit the number of images to select
         });
-        
+
         if (!result.canceled && result.assets && result.assets.length > 0) {
             // Add selected images to the state array
             const imageUris = result.assets.map((asset: any) => asset.uri);
@@ -39,26 +41,44 @@ const Donation = ({ navigation }: any) => {
         }
         // Encrypt the donation data
         const encryptionKey = process.env.EXPO_PUBLIC_ENCRYPT_KEY;  // Use a strong key here
+        if (!encryptionKey) {
+            Alert.alert("Error", "Encryption key not found.");
+            return;
+        }
         const encryptedDetails = CryptoJS.AES.encrypt(details, encryptionKey).toString();
         const encryptedType = CryptoJS.AES.encrypt(type, encryptionKey).toString();
         // Encrypt all image URLs
         const encryptedImages = selectedImages.map((imageUri) =>
             CryptoJS.AES.encrypt(imageUri, encryptionKey).toString()
         );
-        const donationData = {
-            Type: encryptedType,
-            Details: encryptedDetails,
-            Images: encryptedImages, // Encrypted image URLs
-        };
-        console.log("Donation", JSON.stringify(donationData));
         try {
+            const query = `http://localhost:8080/orders?user_id=${user.id}`;
+            let response = await fetch(query, {
+                headers: {
+                    Authorization: `Bearer ${await getJwtToken()}`,
+                },
+            });
+
+            const data: Order = await response.json();
+            const orderID = data.ID;
+
+            const donationData = {
+                order_id: orderID,
+                type: encryptedType,
+                details: encryptedDetails,
+                images: encryptedImages, // Encrypted image URLs
+            };
+
+            console.log("Donation", JSON.stringify(donationData));
+
+
             // You can upload images to S3 here or send URLs to backend after uploading
             const uploadedImageUrls = await uploadImagesToS3(selectedImages);
-            donationData.Images = uploadedImageUrls.map((url) =>
+            donationData.images = uploadedImageUrls.map((url) =>
                 CryptoJS.AES.encrypt(url, encryptionKey).toString()
             ); // Encrypt the uploaded image URLs
 
-            const response = await fetch("http://localhost:8080/donations", {
+            response = await fetch("http://localhost:8080/donations", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -83,10 +103,10 @@ const Donation = ({ navigation }: any) => {
 
     const uploadImagesToS3 = async (images: string[]): Promise<string[]> => {
         const uploadedUrls: string[] = [];
-        
+
         for (const imageUri of images) {
             const fileName = imageUri.split('/').pop(); // Extract the file name from the URI
-    
+
             // Pass the filename as a query parameter
             const presignedUrlResponse = await fetch(`http://localhost:8080/generate-presigned-url?filename=${fileName}`, {
                 method: "GET",
@@ -94,11 +114,11 @@ const Donation = ({ navigation }: any) => {
                     "Content-Type": "application/json",
                 },
             });
-    
+
             const presignedUrl = await presignedUrlResponse.json();
             const uploadUrl = presignedUrl.url; // This is the presigned URL
             console.log("uploadUrl:", uploadUrl)
-            
+
             // Upload the image to S3 using the presigned URL
             const response = await fetch(uploadUrl, {
                 method: "PUT",
@@ -107,7 +127,7 @@ const Donation = ({ navigation }: any) => {
                 },
                 body: await fetch(imageUri).then(res => res.blob()), // Fetch the image blob
             });
-    
+
             if (response.ok) {
                 const imageUrl = uploadUrl.split('?')[0]; // The public URL of the uploaded image (without the query params)
                 uploadedUrls.push(imageUrl);
@@ -116,7 +136,7 @@ const Donation = ({ navigation }: any) => {
                 break;
             }
         }
-    
+
         return uploadedUrls;
     };
 
@@ -126,7 +146,7 @@ const Donation = ({ navigation }: any) => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.label}>Donation Type</Text>
+            <Text style={styles.label}>Tipo</Text>
             <Picker
                 selectedValue={type}
                 style={styles.picker}
@@ -137,15 +157,15 @@ const Donation = ({ navigation }: any) => {
                 <Picker.Item label="Ropa" value="Clothing" />
             </Picker>
 
-            <Text style={styles.label}>Details</Text>
+            <Text style={styles.label}>Detalles</Text>
             <TextInput
                 style={styles.input}
-                placeholder="Enter donation details"
+                placeholder="Pon los detalles de la donación"
                 value={details}
                 onChangeText={setDetails}
             />
-            <Text style={styles.label}>Images</Text>
-            <Button title="Pick Images" onPress={handleImagePick} />
+            <Text style={styles.label}>Imágenes</Text>
+            <Button title="Escoger Imágenes" onPress={handleImagePick} />
 
             {/* Display multiple images with remove option */}
             <ScrollView horizontal contentContainerStyle={styles.imagePreviewContainer}>
@@ -211,5 +231,3 @@ const styles = StyleSheet.create({
         fontSize: 18,
     },
 });
-
-export default Donation;

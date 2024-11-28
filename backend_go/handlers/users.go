@@ -45,14 +45,25 @@ func handleGetUser(w http.ResponseWriter, r *http.Request, userID string) {
 }
 
 func handleUpdateUserPickupDetails(w http.ResponseWriter, r *http.Request, userID string) {
+	payload := struct {
+		Address       string `json:"address"`
+		PickupDetails string `json:"pickupDetails"`
+	}{}
+
+	err := json.NewDecoder(r.Body).Decode(&payload)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
 	user, err := services.GetUser(userID)
 	if err != nil {
 		RespondWithError(w, http.StatusInternalServerError, "Failed to fetch user")
 		return
 	}
 
-	address := r.URL.Query().Get("address")
-	pickupDetails := r.URL.Query().Get("pickup_details")
+	address := payload.Address
+	pickupDetails := payload.PickupDetails
 	if address == "" || pickupDetails == "" {
 		RespondWithError(w, http.StatusBadRequest, "Missing address or pickup details")
 		return
