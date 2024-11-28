@@ -1,59 +1,129 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
-import Footer from './footer';
+import { getJwtToken } from "@/helpers/auth";
+import { StaffOrder } from "@/helpers/types";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
 
-type RootStackParamList = {
-  Dashboard: undefined;
-  Pickup: undefined;
-  Historial: undefined;
-  VerDonacion: { user: any };
-};
+const Dashboard = ({ route, navigation }: any) => {
+  const [orders, setOrders] = useState<StaffOrder[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = route.params;
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const query = `http://localhost:8080/orders?user_id=${user.id}`;
+        const response = await fetch(query, {
+          headers: {
+            Authorization: `Bearer ${getJwtToken()}`,
+          },
+        });
 
-const Dashboard = () => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+        if (!response.ok) {
+          throw new Error("Error fetching orders");
+        }
 
-  const users = [
-    { label: 'Medicina', status: 'Revisar' },
-    { label: 'Medicina', status: 'Revisar', additionalLabels: ['Ropa', 'Comida'] },
-    { label: 'Comida', status: 'Recoger' },
-    { label: 'Ropa', status: 'Recoger' },
-  ];
+        const data: StaffOrder[] = await response.json();
+        console.log("Orders:", data);
+        setOrders(data);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const reviewCount = users.filter(user => user.status === 'Revisar').length;
-  const pickUpCount = users.filter(user => user.status === 'Recoger').length;
+    fetchOrders();
+  }, []);
 
-  const handleNavigation = (screen: keyof RootStackParamList) => {
-    navigation.navigate(screen);
+  const renderOrder = ({ item }: { item: any }) => (
+    <TouchableOpacity
+      style={styles.orderCard}
+      onPress={() => navigation.navigate("OrderDetails", { order: item })}
+    >
+      <View style={styles.cardHeader}>
+        <Text style={styles.orderId}>Orden ID: {item.ID}</Text>
+      </View>
+
+      <View style={styles.cardBody}>
+        <Text style={styles.cardText}>Cliente: {item.customerName || "N/A"}</Text>
+        <Text style={styles.cardText}>Creado: {formatDate(item.createdAt)}</Text>
+      </View>
+
+      <TouchableOpacity
+        style={styles.detailButton}
+        onPress={() => navigation.navigate("OrderVerification", { order: item })}
+      >
+        <Text style={styles.detailButtonText}>Ver Detalles</Text>
+      </TouchableOpacity>
+    </TouchableOpacity>
+  );
+
+  const getStatusStyle = (status: string) => {
+    switch (status) {
+      case "Pending":
+        return { color: "#FFA500" }; // Orange for pending
+      case "Completed":
+        return { color: "#2A9D8F" }; // Green for completed
+      case "Rejected":
+        return { color: "#E63946" }; // Red for rejected
+      default:
+        return { color: "#ECF0F1" }; // Default white
+    }
   };
 
-  const handleReviewPress = (user: any) => {
-    navigation.navigate('VerDonacion', { user }); // Navegación con parámetros
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
   };
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {users.filter(user => user.status === 'Revisar').map((user, index) => (
-          <View key={index} style={styles.userItem}>
-            <Image source={{ uri: 'https://via.placeholder.com/100' }} style={styles.image} />
-            <View style={styles.userDetails}>
-              <TouchableOpacity
-                style={styles.reviewButton}
-                onPress={() => handleReviewPress(user)}
-              >
-                <Text style={styles.buttonText}>Revisar</Text>
-              </TouchableOpacity>
-              <Text style={styles.userLabel}>{user.label}</Text>
-              {user.additionalLabels && user.additionalLabels.map((label, i) => (
-                <Text key={i} style={styles.userLabel}>{label}</Text>
-              ))}
-            </View>
-          </View>
-        ))}
-      </ScrollView>
+      {loading ? (
+        <ActivityIndicator size="large" color="#ECF0F1" />
+      ) : (
+        <FlatList
+          data={orders}
+          renderItem={renderOrder}
+          keyExtractor={(item) => item.ID.toString()}
+          contentContainerStyle={styles.scrollContainer}
+        />
+      )}
 
-      <Footer reviewCount={reviewCount} pickUpCount={pickUpCount} setCurrentScreen={handleNavigation} />
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={styles.footerButton}
+          onPress={() => navigation.navigate("Dashboard")}
+        >
+          <Text style={styles.footerButtonText}>Verificación</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.footerButton}
+          onPress={() => navigation.navigate("Schedule")}
+        >
+          <Text style={styles.footerButtonText}>Programar</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.footerButton}
+          onPress={() => navigation.navigate("Pickup")}
+        >
+          <Text style={styles.footerButtonText}>Recolección</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.footerButton}
+          onPress={() => navigation.navigate("History")}
+        >
+          <Text style={styles.footerButtonText}>Historial</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -61,45 +131,64 @@ const Dashboard = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#457B9D',
+    backgroundColor: "#457B9D",
   },
   scrollContainer: {
     paddingVertical: 20,
   },
-  userItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#6a8fa7',
-    padding: 15,
+  orderCard: {
+    backgroundColor: "#1D3557",
     marginHorizontal: 20,
     marginVertical: 10,
     borderRadius: 10,
+    padding: 15,
   },
-  image: {
-    width: 100,
-    height: 100,
-    marginRight: 15,
-  },
-  userDetails: {
-    flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-  },
-  reviewButton: {
-    backgroundColor: '#E63946',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 5,
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 10,
   },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+  orderId: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#ECF0F1",
   },
-  userLabel: {
-    color: '#fff',
-    fontWeight: 'bold',
-    marginBottom: 5,
+  orderStatus: {
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  cardBody: {
+    marginBottom: 10,
+  },
+  cardText: {
+    fontSize: 14,
+    color: "#ECF0F1",
+  },
+  detailButton: {
+    backgroundColor: "#E63946",
+    paddingVertical: 8,
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  detailButtonText: {
+    color: "#ECF0F1",
+    fontWeight: "bold",
+  },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    paddingVertical: 10,
+    backgroundColor: "#1D3557",
+  },
+  footerButton: {
+    backgroundColor: "#E63946",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  footerButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
 

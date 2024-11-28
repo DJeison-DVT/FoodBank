@@ -5,6 +5,7 @@ import { useFocusEffect } from 'expo-router';
 import { deleteJwtToken, getJwtToken } from '@/helpers/auth';
 import CryptoJS from 'crypto-js';
 import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import { Donation, Order } from '@/helpers/types';
 
 export default function ActiveOrder({ route, navigation }: { route: any; navigation: any }) {
   const [order, setOrder] = useState<Order | null>(null);

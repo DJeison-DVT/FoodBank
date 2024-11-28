@@ -12,39 +12,43 @@ import DetalleDonacion from '../staff/detalleDonacion';
 
 import Bienvenido from '@/user/bienvenidos';
 import ActiveOrder from '@/user/ActiveOrder';
-import DatosRecoleccion from '@/user/recoleccion';
 import Donation from '@/user/Donation';
 import DonationDetailView from '@/user/DonationDetailView';
 import Profile from '@/user/Profile';
 
 const Stack = createStackNavigator();
 
-function StaffStack() {
+function StaffStack({ user }: { user: UserData }) {
   return (
     <Stack.Navigator>
       <Stack.Screen
         name="Dashboard"
         component={Dashboard}
+        initialParams={{ user }}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name="Pickup"
         component={Pickup}
+        initialParams={{ user }}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name="Historial"
         component={Historial}
+        initialParams={{ user }}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name="VerDonacion"
         component={VerDonacion}
+        initialParams={{ user }}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name="DetalleDonacion"
         component={DetalleDonacion}
+        initialParams={{ user }}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
@@ -58,11 +62,6 @@ function UserStack({ user, updateUser }: { user: UserData; updateUser: (user: Us
       <Stack.Screen
         name="Bienvenido"
         component={Bienvenido}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="DatosRecoleccion"
-        component={DatosRecoleccion}
         options={{ headerShown: false }}
       />
       <Stack.Screen
@@ -122,7 +121,7 @@ function App() {
     <NavigationContainer independent={true}>
       {user ? (
         user.role === 'staff' ? (
-          <StaffStack />
+          <StaffStack user={user} />
         ) : (
           <UserStack user={user} updateUser={updateUser} />
         )

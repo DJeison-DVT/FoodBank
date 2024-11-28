@@ -1,3 +1,5 @@
+import { UserData } from "./auth";
+
 interface Donation {
 	ID: number;
 	CreatedAt: string;
@@ -22,3 +24,9 @@ interface Order {
 	UpdatedAt: string;
 	DeletedAt: string | null;
 }
+
+interface StaffOrder extends Order {
+	user: UserData;
+}
+
+export { Donation, Order, StaffOrder };

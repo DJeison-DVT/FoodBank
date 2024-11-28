@@ -1,3 +1,4 @@
+import { Donation } from '@/helpers/types';
 import React from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, Button } from 'react-native';
 

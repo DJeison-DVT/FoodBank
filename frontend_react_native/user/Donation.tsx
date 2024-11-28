@@ -4,6 +4,7 @@ import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import CryptoJS, { enc } from 'crypto-js'; // Import CryptoJS for encryption
 import { getJwtToken } from '@/helpers/auth';
+import { Order } from '@/helpers/types';
 
 export default function Donation({ route, navigation }: { route: any; navigation: any }) {
     const [type, setType] = useState("Medicine");
