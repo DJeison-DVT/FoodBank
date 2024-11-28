@@ -6,6 +6,7 @@ import { deleteJwtToken, getJwtToken } from '@/helpers/auth';
 import CryptoJS from 'crypto-js';
 import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 import { Donation, Order } from '@/helpers/types';
+import { decryptDonations } from '@/helpers/crypto';
 
 export default function ActiveOrder({ route, navigation }: { route: any; navigation: any }) {
   const [order, setOrder] = useState<Order | null>(null);
@@ -42,7 +43,6 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
 
       data.donations = decryptDonations(data.donations);
 
-      console.log('Active order:', data);
       setOrder(data);
     } catch (error) {
       console.error('Error fetching active order:', error);
@@ -50,16 +50,6 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
   };
 
 
-  const decryptDonations = (donations: Donation[]) => {
-    const decryptedDonations = donations.map((donation) => ({
-      ...donation,
-      type: decryptData(donation.type),
-      details: decryptData(donation.details),
-      images: donation.images.map((imageUrl) => decryptData(imageUrl)),
-    }));
-
-    return decryptedDonations;
-  };
 
   useFocusEffect(
     useCallback(() => {
@@ -72,15 +62,6 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
     }, [user, navigation])
   );
 
-  // Decrypt encrypted data (Details, Type, Image URLs)
-  const decryptData = (encryptedData: string): string => {
-    if (!encryptionKey) {
-      console.error("Encryption key is missing.");
-      return "";
-    }
-    const bytes = CryptoJS.AES.decrypt(encryptedData, encryptionKey);
-    return bytes.toString(CryptoJS.enc.Utf8); // Convert to UTF-8 string
-  };
 
   const handleDelete = async (id: number) => {
     setDisabled(true);
@@ -122,8 +103,6 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
 
     getActiveOrder();
   };
-
-
 
   const renderDonation = ({
     item,
