@@ -5,6 +5,12 @@ import (
 	"backend_go/models"
 
 	"gorm.io/gorm"
+
+	"crypto/rand"
+	"encoding/base64"
+	"golang.org/x/crypto/bcrypt"
+
+	"fmt"
 )
 
 func GetOrder(orderID uint) (models.Order, error) {
@@ -62,7 +68,7 @@ func GetUserActiveOrder(userID string) (models.Order, error) {
 	if err != nil {
 		return models.Order{}, err
 	}
-
+	
 	return order, nil
 }
 
@@ -104,10 +110,46 @@ func updateOrder(tx *gorm.DB, order *models.Order) error {
 	return nil
 }
 
-// TODO link qr code to order here
+func generateToken(length int) (string, error) {
+	bytes := make([]byte, length)
+	_, err := rand.Read(bytes)
+	if err != nil {
+		return "", err
+	}
+	return base64.URLEncoding.EncodeToString(bytes), nil
+}
+
+func hashToken(token string) (string, error) {
+	hashed, err := bcrypt.GenerateFromPassword([]byte(token), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hashed), nil
+}
+
+func verifyToken(hashedToken, token string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hashedToken), []byte(token))
+	return err == nil
+}
+
 func VerifyOrder(order *models.Order) error {
 	return database.DB.Transaction(func(tx *gorm.DB) error {
 		order.Status = models.StatusVerified
+
+		// token, err := generateToken(32)
+		// if err != nil {
+		// 	fmt.Println("Error generating token:", err)
+		// 	return err
+		// }
+
+		hashed, err := hashToken(order.UserID)
+		if err != nil {
+			fmt.Println("Error hashing token:", err)
+			return err
+		}
+
+		order.VerificationQRCode = hashed
+
 		if err := updateOrder(tx, order); err != nil {
 			return err
 		}

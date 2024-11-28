@@ -5,10 +5,10 @@ import (
 	"backend_go/models"
 	"backend_go/services"
 	"net/http"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
-// TODO fill with pickup order logic using QR code
-// The current field is on Order.VerificationQRCode
 func OrderPickupHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
@@ -38,6 +38,11 @@ func OrderPickupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func verifyToken(hashedToken, token string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hashedToken), []byte(token))
+	return err == nil
+}
+
 func pickupOrder(w http.ResponseWriter, r *http.Request) {
 	payload := struct {
 		OrderID uint `json:"order_id"`
@@ -51,6 +56,12 @@ func pickupOrder(w http.ResponseWriter, r *http.Request) {
 	order, err := services.GetOrder(payload.OrderID)
 	if err != nil {
 		handlers.RespondWithError(w, http.StatusBadRequest, "Order not found")
+		return
+	}
+	
+	err = bcrypt.CompareHashAndPassword([]byte(order.VerificationQRCode), []byte(order.UserID))
+	if err != nil {
+		handlers.RespondWithError(w, http.StatusBadRequest, "Invalid QR validation")
 		return
 	}
 
