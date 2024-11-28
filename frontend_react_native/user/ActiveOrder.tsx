@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import { MaterialIcons, FontAwesome } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { deleteJwtToken, getJwtToken } from '@/helpers/auth';
 import CryptoJS from 'crypto-js';
 
 export default function ActiveOrder({ route, navigation }: { route: any; navigation: any }) {
-  const [donations, setDonations] = useState<Donation[]>([]);
+  const [order, setOrder] = useState<Order | null>(null);
   const { user } = route.params;
 
   const encryptionKey = process.env.EXPO_PUBLIC_ENCRYPT_KEY;
@@ -29,29 +29,30 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
       }
       const data: Order = await response.json();
       console.log('Active order:', data);
+      setOrder(data);
     } catch (error) {
       console.error('Error fetching active order:', error);
     }
   }
 
 
-  const fetchDonations = async () => {
-    try {
-      const response = await fetch("http://localhost:8080/donations");
-      const data: Donation[] = await response.json();
-      // Decrypt the donation details, type, and images
-      const decryptedDonations = data.map((donation) => ({
-        ...donation,
-        Type: decryptData(donation.Type),
-        Details: decryptData(donation.Details),
-        // Images: donation.Images.map((imageUrl) => decryptData(imageUrl)), // Decrypt each image URL
-      }));
+  // const fetchDonations = async () => {
+  //   try {
+  //     const response = await fetch("http://localhost:8080/donations");
+  //     const data: Donation[] = await response.json();
+  //     // Decrypt the donation details, type, and images
+  //     const decryptedDonations = data.map((donation) => ({
+  //       ...donation,
+  //       Type: decryptData(donation.Type),
+  //       Details: decryptData(donation.Details),
+  //       // Images: donation.Images.map((imageUrl) => decryptData(imageUrl)), // Decrypt each image URL
+  //     }));
 
-      setDonations(decryptedDonations);
-    } catch (error) {
-      console.error("Error fetching donations:", error);
-    }
-  };
+  //     setDonations(decryptedDonations);
+  //   } catch (error) {
+  //     console.error("Error fetching donations:", error);
+  //   }
+  // };
 
   useFocusEffect(
     useCallback(() => {
@@ -106,10 +107,19 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
     return date.toLocaleDateString();
   };
 
+  if (!order) {
+    return (
+      <View style={styles.spinnerContainer}>
+        <ActivityIndicator size="large" color="#1D3557" />
+        <Text style={styles.spinnerText}>Loading your order...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <FlatList
-        data={donations}
+        data={order.Donations}
         keyExtractor={(item) => item.ID.toString()}
         renderItem={renderDonation}
         contentContainerStyle={styles.listContainer}
@@ -119,7 +129,7 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
         <TouchableOpacity style={styles.footerButton}>
           <Text style={styles.footerButtonText}>Donando</Text>
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>{donations.length}</Text>
+            <Text style={styles.badgeText}>{order.Donations?.length || '0'}</Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Donation')}>
@@ -145,6 +155,17 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     backgroundColor: "#F1FAEE",
     borderRadius: 8,
+  },
+  spinnerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  spinnerText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#1D3557',
   },
   cardContent: {
     flex: 1,
