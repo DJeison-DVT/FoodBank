@@ -11,7 +11,7 @@ import VerDonacion from '../staff/verDonacion';
 import DetalleDonacion from '../staff/detalleDonacion';
 
 import Bienvenido from '@/user/bienvenidos';
-import Donaciones from '@/user/donaciones';
+import ActiveOrder from '@/user/ActiveOrder';
 import DatosRecoleccion from '@/user/recoleccion';
 import Donation from '@/user/Donation';
 
@@ -49,7 +49,7 @@ function StaffStack() {
   );
 }
 
-function UserStack() {
+function UserStack({ user }: { user: UserData }) {
   return (
     <Stack.Navigator>
       <Stack.Screen
@@ -64,8 +64,9 @@ function UserStack() {
       />
       <Stack.Screen
         name="Donaciones"
-        component={Donaciones}
+        component={ActiveOrder}
         options={{ headerShown: false }}
+        initialParams={{ user }}
       />
       <Stack.Screen
         name="Donation"
@@ -103,7 +104,7 @@ function App() {
         user.role === 'staff' ? (
           <StaffStack />
         ) : (
-          <UserStack />
+          <UserStack user={user} />
         )
       ) : (
         <Stack.Navigator>

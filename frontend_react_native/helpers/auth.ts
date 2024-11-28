@@ -5,8 +5,24 @@ export interface UserData {
 	name: string;
 	email: string;
 	picture?: string;
+	id: string;
 	address?: string;
+	pickup_details?: string;
 }
+
+export const getJwtToken = async (): Promise<string | null> => {
+	try {
+		const jwtToken = await AsyncStorage.getItem("jwt_token");
+		if (jwtToken === null) {
+			console.error("No JWT token found");
+			return null;
+		}
+		return jwtToken;
+	} catch (error) {
+		console.error("Error getting JWT token:", error);
+		return null;
+	}
+};
 
 // Fetches user information using the JWT token stored in AsyncStorage
 export const fetchUserInfo = async (): Promise<UserData | undefined> => {

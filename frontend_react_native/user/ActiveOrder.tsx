@@ -2,24 +2,38 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
 import { MaterialIcons, FontAwesome } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
-import { deleteJwtToken } from '@/helpers/auth';
+import { deleteJwtToken, getJwtToken } from '@/helpers/auth';
 import CryptoJS from 'crypto-js';
 
-interface Donation {
-  ID: number;
-  CreatedAt: string;
-  UpdatedAt: string;
-  DeletedAt: string | null;
-  Type: string;
-  Details: string;
-  OrderID: number;
-  // Images: string[];
-}
-
-export default function Donaciones({ navigation }: any) {
+export default function ActiveOrder({ route, navigation }: { route: any; navigation: any }) {
   const [donations, setDonations] = useState<Donation[]>([]);
+  const { user } = route.params;
 
   const encryptionKey = process.env.EXPO_PUBLIC_ENCRYPT_KEY;
+  const getActiveOrder = async () => {
+    try {
+      const query = `http://localhost:8080/orders?user_id=${user.id}`;
+      let response = await fetch(query, {
+        headers: {
+          Authorization: `Bearer ${await getJwtToken()}`,
+        },
+      });
+
+      if (response.ok && response.status === 204) {
+        response = await fetch(query, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${await getJwtToken()}`,
+          },
+        })
+      }
+      const data: Order = await response.json();
+      console.log('Active order:', data);
+    } catch (error) {
+      console.error('Error fetching active order:', error);
+    }
+  }
+
 
   const fetchDonations = async () => {
     try {
@@ -41,7 +55,7 @@ export default function Donaciones({ navigation }: any) {
 
   useFocusEffect(
     useCallback(() => {
-      fetchDonations();
+      getActiveOrder();
     }, [])
   );
 
