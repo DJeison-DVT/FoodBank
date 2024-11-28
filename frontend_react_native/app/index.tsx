@@ -15,6 +15,7 @@ import ActiveOrder from '@/user/ActiveOrder';
 import DatosRecoleccion from '@/user/recoleccion';
 import Donation from '@/user/Donation';
 import DonationDetailView from '@/user/DonationDetailView';
+import Profile from '@/user/Profile';
 
 const Stack = createStackNavigator();
 
@@ -51,7 +52,7 @@ function StaffStack() {
   );
 }
 
-function UserStack({ user }: { user: UserData }) {
+function UserStack({ user, updateUser }: { user: UserData; updateUser: (user: UserData) => void }) {
   return (
     <Stack.Navigator>
       <Stack.Screen
@@ -69,6 +70,12 @@ function UserStack({ user }: { user: UserData }) {
         component={ActiveOrder}
         options={{ headerShown: false }}
         initialParams={{ user }}
+      />
+      <Stack.Screen
+        name="Profile"
+        component={Profile}
+        options={{ headerShown: false }}
+        initialParams={{ user, updateUser }}
       />
       <Stack.Screen
         name="Donation"
@@ -93,6 +100,11 @@ function App() {
     setUser(user);
   };
 
+  const updateUser = (updatedUser: UserData) => {
+    console.log('updating app user', updatedUser);
+    setUser(updatedUser);
+  };
+
   React.useEffect(() => {
     fetchUserInfo().then((userData) => {
       if (userData) {
@@ -112,7 +124,7 @@ function App() {
         user.role === 'staff' ? (
           <StaffStack />
         ) : (
-          <UserStack user={user} />
+          <UserStack user={user} updateUser={updateUser} />
         )
       ) : (
         <Stack.Navigator>

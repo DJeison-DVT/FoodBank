@@ -62,8 +62,13 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
 
   useFocusEffect(
     useCallback(() => {
+      console.log('User:', user);
+      if (!user.pickup_details || !user.address) {
+        navigation.navigate('Profile', { user });
+        return;
+      }
       getActiveOrder();
-    }, [])
+    }, [user, navigation])
   );
 
   // Decrypt encrypted data (Details, Type, Image URLs)
@@ -300,10 +305,11 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
             <FontAwesome name="plus" size={24} color="#1D3557" />
           </TouchableOpacity>
         )}
-        {/* TODO add user profile */}
-        <TouchableOpacity style={styles.footerButton}>
-          <FontAwesome name="user" size={24} color="#1D3557" />
-        </TouchableOpacity>
+        {canBeModified() &&
+          <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('Profile', { user })}>
+            <FontAwesome name="user" size={24} color="#1D3557" />
+          </TouchableOpacity>
+        }
       </View>
     </View>
   );
