@@ -14,6 +14,7 @@ import Bienvenido from '@/user/bienvenidos';
 import ActiveOrder from '@/user/ActiveOrder';
 import DatosRecoleccion from '@/user/recoleccion';
 import Donation from '@/user/Donation';
+import DonationDetailView from '@/user/DonationDetailView';
 
 const Stack = createStackNavigator();
 
@@ -46,6 +47,7 @@ function StaffStack() {
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
+
   );
 }
 
@@ -73,6 +75,11 @@ function UserStack({ user }: { user: UserData }) {
         component={Donation}
         options={{ headerShown: false }}
         initialParams={{ user }}
+      />
+      <Stack.Screen
+        name="DonationDetailView"
+        component={DonationDetailView}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );

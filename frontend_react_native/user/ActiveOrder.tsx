@@ -75,18 +75,29 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
   };
 
 
-  // Render each donation card
-  const renderDonation = ({ item, index }: { item: Donation; index: number }) => (
-    <TouchableOpacity style={styles.donationCard}>
-      <MaterialIcons name={getIconName(item.type)} size={48} color="#E63946" />
+  const renderDonation = ({ item, index, navigation }: { item: Donation; index: number; navigation: any }) => (
+    <TouchableOpacity
+      style={styles.donationCard}
+      onPress={() => {
+        console.log('Donation:', item);
+        navigation.navigate('DonationDetailView', { donation: item })
+      }} // Navigate to detailed view
+    >
+      <MaterialIcons
+        name={getIconName(item.type)}
+        size={48}
+        color="#E63946"
+      />
+
       <View style={styles.cardContent}>
-        <Text style={styles.indexText}>#{index + 1}</Text>
-        <TouchableOpacity style={styles.viewButton}>
-          <Text style={styles.viewButtonText}>Ver</Text>
-        </TouchableOpacity>
+        <View style={styles.cardHeader}>
+          <Text style={styles.indexText}>#{index + 1}</Text>
+        </View>
+
+        {/* Donation Details */}
         <Text style={styles.itemText}>{item.type}</Text>
         <Text style={styles.detailsText}>{item.details}</Text>
-        <Text style={styles.statusText}>{formatDate(item.CreatedAt)}</Text>
+        <Text style={styles.statusText}>Created: {formatDate(item.CreatedAt)}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -124,8 +135,8 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
     <View style={styles.container}>
       <FlatList
         data={order.donations}
+        renderItem={(itemData) => renderDonation({ ...itemData, navigation })}
         keyExtractor={(item) => item.ID.toString()}
-        renderItem={renderDonation}
         contentContainerStyle={styles.listContainer}
       />
 
@@ -159,6 +170,11 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     backgroundColor: "#F1FAEE",
     borderRadius: 8,
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   spinnerContainer: {
     flex: 1,
