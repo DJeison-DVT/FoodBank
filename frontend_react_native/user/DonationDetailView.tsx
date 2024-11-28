@@ -1,12 +1,13 @@
 import { Donation } from '@/helpers/types';
 import React from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, Button } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, Button, TouchableOpacity } from 'react-native';
+import Icon from "react-native-vector-icons/MaterialIcons";
 
 const DonationDetailView = ({ route, navigation }: { route: any; navigation: any }) => {
     const { donation }: { donation: Donation } = route.params;
 
     type DonationType = 'Medicine' | 'Food' | 'Clothes';
-    type DonationStatus = 'BeingModified' | 'Completed' | 'Pending';
+    type DonationStatus = 'BeingModified' | 'Completed' | 'Pending' | 'Approved' | 'Rejected';
 
     const traductions: Record<DonationType | DonationStatus, string> = {
         Medicine: 'Medicina',
@@ -15,10 +16,17 @@ const DonationDetailView = ({ route, navigation }: { route: any; navigation: any
         BeingModified: 'Siendo Modificada',
         Completed: 'Completada',
         Pending: 'Pendiente',
+        Approved: 'Aprobada',
+        Rejected: 'Rechazada',
     };
 
     return (
         <ScrollView style={styles.container}>
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                <Icon name="arrow-back" size={24} color="#fff" />
+                <Text style={styles.backButtonText}>Regresar</Text>
+            </TouchableOpacity>
+
             {/* Title */}
             <Text style={styles.title}>Detalles de la Donación</Text>
 
@@ -60,11 +68,6 @@ const DonationDetailView = ({ route, navigation }: { route: any; navigation: any
             ) : (
                 <Text style={styles.noImagesText}>No hay imágenes disponibles.</Text>
             )}
-
-            {/* Back Button */}
-            <View style={styles.buttonContainer}>
-                <Button title="Regresar" onPress={() => navigation.goBack()} color="#457B9D" />
-            </View>
         </ScrollView>
     );
 };
@@ -84,7 +87,7 @@ const formatDate = (dateString: string) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#457B9D',
         padding: 16,
     },
     title: {
@@ -134,6 +137,17 @@ const styles = StyleSheet.create({
     },
     buttonContainer: {
         marginTop: 16,
+    },
+    backButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 20,
+    },
+    backButtonText: {
+        color: "#fff",
+        fontSize: 16,
+        fontWeight: "bold",
+        marginLeft: 10,
     },
 });
 
