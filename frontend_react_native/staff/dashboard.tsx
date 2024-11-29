@@ -1,3 +1,5 @@
+import Header from "@/components/Header";
+import StaffFooter from "@/components/StaffFooter";
 import { getJwtToken } from "@/helpers/auth";
 import { decryptDonations } from "@/helpers/crypto";
 import { StaffOrder } from "@/helpers/types";
@@ -91,6 +93,7 @@ const Dashboard = ({ route, navigation }: any) => {
 
   return (
     <View style={styles.container}>
+      <Header title="Verificación" />
       {loading ? (
         <ActivityIndicator size="large" color="#ECF0F1" />
       ) : (
@@ -102,35 +105,7 @@ const Dashboard = ({ route, navigation }: any) => {
         />
       )}
 
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.footerButton}
-          onPress={() => navigation.navigate("Dashboard")}
-        >
-          <Text style={styles.footerButtonText}>Verificación</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.footerButton}
-          onPress={() => navigation.navigate("Schedule")}
-        >
-          <Text style={styles.footerButtonText}>Programar</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.footerButton}
-          onPress={() => navigation.navigate("Pickup")}
-        >
-          <Text style={styles.footerButtonText}>Recolección</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.footerButton}
-          onPress={() => navigation.navigate("History")}
-        >
-          <Text style={styles.footerButtonText}>Historial</Text>
-        </TouchableOpacity>
-      </View>
+      <StaffFooter navigation={navigation} />
     </View>
   );
 };
@@ -179,22 +154,6 @@ const styles = StyleSheet.create({
   },
   detailButtonText: {
     color: "#ECF0F1",
-    fontWeight: "bold",
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    paddingVertical: 10,
-    backgroundColor: "#1D3557",
-  },
-  footerButton: {
-    backgroundColor: "#E63946",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-  },
-  footerButtonText: {
-    color: "#fff",
     fontWeight: "bold",
   },
 });
