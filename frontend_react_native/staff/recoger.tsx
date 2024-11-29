@@ -1,100 +1,160 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
-import Footer from './footer';
+import Header from "@/components/Header";
+import StaffFooter from "@/components/StaffFooter";
+import { getJwtToken } from "@/helpers/auth";
+import { decryptDonations } from "@/helpers/crypto";
+import { StaffOrder } from "@/helpers/types";
+import { useFocusEffect } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
 
-// Define the type for navigation screens
-type RootStackParamList = {
-  Dashboard: undefined;
-  Pickup: undefined;
-  Historial: undefined;
-};
+const Pickup = ({ route, navigation }: any) => {
+  const [orders, setOrders] = useState<StaffOrder[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = route.params;
 
-const Pickup = () => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const fetchOrders = async () => {
+    try {
+      const query = `http://localhost:8080/orders/pickup?user_id=${user.id}`;
+      const response = await fetch(query, {
+        headers: {
+          Authorization: `Bearer ${getJwtToken()}`,
+        },
+      });
 
-  const reviewCount = users.filter(user => user.status === 'Revisar').length;
-  const pickUpCount = users.filter(user => user.status === 'Recoger').length;
+      if (!response.ok) {
+        throw new Error("Error fetching orders");
+      }
+      const data: StaffOrder[] = await response.json();
+      for (const order of data) {
+        order.donations = decryptDonations(order.donations);
+      }
+      setOrders(data);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const handleNavigation = (screen: keyof RootStackParamList) => {
-    navigation.navigate(screen);
+  useFocusEffect(
+    useCallback(() => {
+      fetchOrders();
+    }, [])
+  );
+
+  const renderOrder = ({ item }: { item: StaffOrder }) => (
+    <TouchableOpacity
+      style={styles.orderCard}
+      // TODO Si quieres meter un detail view para que hay sea la camara
+      onPress={() => navigation.navigate("", { order: item })}
+    >
+      <View style={styles.cardHeader}>
+        <Text style={styles.orderId}>Orden ID: {item.ID}</Text>
+      </View>
+
+      <View style={styles.cardBody}>
+        <Text style={styles.cardText}>Cliente: {item.user.name || "N/A"}</Text>
+        <Text style={styles.cardText}>Creado: {formatDate(item.CreatedAt)}</Text>
+        <Text style={styles.cardTextImportant}>Dirección: {item.user.address}</Text>
+        <Text style={styles.cardTextImportant}>Indicaciones de entrega: {item.user.pickup_details}</Text>
+        {item.PickupDate && (
+          <Text style={styles.cardTextImportant}>Fecha de recolección agendada: {formatDate(item.PickupDate)}</Text>
+        )}
+        {item.PickupTime && (
+          <Text style={styles.cardTextImportant}>Hora de recolección agendada: {item.PickupTime}</Text>
+        )}
+      </View>
+
+      <TouchableOpacity
+        style={styles.detailButton}
+        disabled
+      >
+        <Text style={styles.detailButtonText}>Recoger</Text>
+      </TouchableOpacity>
+    </TouchableOpacity>
+  );
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
   };
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* User List Items to Pick Up */}
-        {users.filter(user => user.status === 'Recoger').map((user, index) => (
-          <View key={index} style={styles.userItem}>
-            <Image source={{ uri: 'https://via.placeholder.com/100' }} style={styles.image} />
-            <View style={styles.userDetails}>
-              <TouchableOpacity style={styles.reviewButton}>
-                <Text style={styles.buttonText}>Recoger</Text>
-              </TouchableOpacity>
-              <Text style={styles.userLabel}>{user.label}</Text>
-              {user.additionalLabels && user.additionalLabels.map((label, i) => (
-                <Text key={i} style={styles.userLabel}>{label}</Text>
-              ))}
-            </View>
-          </View>
-        ))}
-      </ScrollView>
+      <Header title="Recoger" />
+      {loading ? (
+        <ActivityIndicator size="large" color="#ECF0F1" />
+      ) : (
+        <FlatList
+          data={orders}
+          renderItem={renderOrder}
+          keyExtractor={(item) => item.ID.toString()}
+          contentContainerStyle={styles.scrollContainer}
+        />
+      )}
 
-      {/* Footer Component */}
-      <Footer reviewCount={reviewCount} pickUpCount={pickUpCount} setCurrentScreen={handleNavigation} />
+      <StaffFooter navigation={navigation} />
     </View>
   );
 };
 
-const users = [
-  { label: 'Medicina', status: 'Revisar' },
-  { label: 'Medicina', status: 'Revisar', additionalLabels: ['Ropa', 'Comida'] },
-  { label: 'Comida', status: 'Recoger' },
-  { label: 'Ropa', status: 'Recoger' },
-];
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#457B9D',
+    backgroundColor: "#457B9D",
   },
   scrollContainer: {
     paddingVertical: 20,
   },
-  userItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#6a8fa7',
-    padding: 15,
+  orderCard: {
+    backgroundColor: "#1D3557",
     marginHorizontal: 20,
     marginVertical: 10,
     borderRadius: 10,
+    padding: 15,
   },
-  image: {
-    width: 100,
-    height: 100,
-    marginRight: 15,
-  },
-  userDetails: {
-    flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-  },
-  userLabel: {
-    color: '#fff',
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  reviewButton: {
-    backgroundColor: '#E63946',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 5,
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 10,
   },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+  orderId: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#ECF0F1",
+  },
+  orderStatus: {
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  cardBody: {
+    marginBottom: 10,
+  },
+  cardText: {
+    fontSize: 14,
+    color: "#ECF0F1",
+  },
+  cardTextImportant: {
+    fontSize: 16,
+    color: "#ECF0F1",
+    fontWeight: "bold",
+  },
+  detailButton: {
+    backgroundColor: "#E63946",
+    paddingVertical: 8,
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  detailButtonText: {
+    color: "#ECF0F1",
+    fontWeight: "bold",
   },
 });
 
