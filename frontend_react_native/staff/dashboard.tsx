@@ -1,4 +1,5 @@
 import { getJwtToken } from "@/helpers/auth";
+import { decryptDonations } from "@/helpers/crypto";
 import { StaffOrder } from "@/helpers/types";
 import React, { useEffect, useState } from "react";
 import {
@@ -14,50 +15,53 @@ const Dashboard = ({ route, navigation }: any) => {
   const [orders, setOrders] = useState<StaffOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = route.params;
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const query = `http://localhost:8080/orders?user_id=${user.id}`;
-        const response = await fetch(query, {
-          headers: {
-            Authorization: `Bearer ${getJwtToken()}`,
-          },
-        });
 
-        if (!response.ok) {
-          throw new Error("Error fetching orders");
-        }
+  const fetchOrders = async () => {
+    try {
+      const query = `http://localhost:8080/orders?user_id=${user.id}`;
+      const response = await fetch(query, {
+        headers: {
+          Authorization: `Bearer ${getJwtToken()}`,
+        },
+      });
 
-        const data: StaffOrder[] = await response.json();
-        console.log("Orders:", data);
-        setOrders(data);
-      } catch (error) {
-        console.error("Error fetching orders:", error);
-      } finally {
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error("Error fetching orders");
       }
-    };
+      const data: StaffOrder[] = await response.json();
+      for (const order of data) {
+        order.donations = decryptDonations(order.donations);
+      }
+      setOrders(data);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchOrders();
   }, []);
 
-  const renderOrder = ({ item }: { item: any }) => (
+  const renderOrder = ({ item }: { item: StaffOrder }) => (
     <TouchableOpacity
       style={styles.orderCard}
-      onPress={() => navigation.navigate("OrderDetails", { order: item })}
+      onPress={() => navigation.navigate("VerDonacion", { order: item })}
     >
       <View style={styles.cardHeader}>
         <Text style={styles.orderId}>Orden ID: {item.ID}</Text>
       </View>
 
       <View style={styles.cardBody}>
-        <Text style={styles.cardText}>Cliente: {item.customerName || "N/A"}</Text>
-        <Text style={styles.cardText}>Creado: {formatDate(item.createdAt)}</Text>
+        <Text style={styles.cardText}>Cliente: {item.user.name || "N/A"}</Text>
+        <Text style={styles.cardText}>Creado: {formatDate(item.CreatedAt)}</Text>
+        <Text style={styles.cardText}>Dirección: {item.user.address}</Text>
       </View>
 
       <TouchableOpacity
         style={styles.detailButton}
-        onPress={() => navigation.navigate("OrderVerification", { order: item })}
+        disabled
       >
         <Text style={styles.detailButtonText}>Ver Detalles</Text>
       </TouchableOpacity>
