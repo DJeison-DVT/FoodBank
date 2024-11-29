@@ -4,7 +4,7 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import { StaffOrder } from "@/helpers/types";
 import { OrderStatus, translateOrderStatus } from "@/helpers/translations";
 
-const VerDonacion = ({ route, navigation }: any) => {
+const DetalleDonacion = ({ route, navigation }: any) => {
   const { order }: { order: StaffOrder } = route.params;
 
   const renderDonation = ({ item }: { item: any }) => {
@@ -156,4 +156,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default VerDonacion;
+export default DetalleDonacion;
