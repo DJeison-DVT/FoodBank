@@ -1,143 +1,193 @@
+import { Donation } from '@/helpers/types';
 import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, ScrollView } from 'react-native';
-import { useRoute, RouteProp } from '@react-navigation/native';
-import Icon from 'react-native-vector-icons/MaterialIcons'; // Para los íconos de flechas
+import { View, Text, StyleSheet, Image, ScrollView, Button, TouchableOpacity } from 'react-native';
+import Icon from "react-native-vector-icons/MaterialIcons";
 
-type RootStackParamList = {
-  DetalleDonacion: { donation: any }; // Parámetro donation para esta pantalla
-};
+const DetalleDonacion = ({ route, navigation }: { route: any; navigation: any }) => {
+  const { donation }: { donation: Donation } = route.params;
 
-type DetalleDonacionRouteProp = RouteProp<RootStackParamList, 'DetalleDonacion'>;
+  type DonationType = 'Medicine' | 'Food' | 'Clothes';
+  type DonationStatus = 'BeingModified' | 'Completed' | 'Pending' | 'Approved' | 'Rejected';
 
-const DetalleDonacion = () => {
-  const route = useRoute<DetalleDonacionRouteProp>();
-  const { donation } = route.params; // Obtener los datos del donativo
+  const traductions: Record<DonationType | DonationStatus, string> = {
+    Medicine: 'Medicina',
+    Food: 'Comida',
+    Clothes: 'Ropa',
+    BeingModified: 'Siendo Modificada',
+    Completed: 'Completada',
+    Pending: 'Pendiente',
+    Approved: 'Aprobada',
+    Rejected: 'Rechazada',
+  };
+
+  const handleApprove = () => {
+    // Add logic for approving the donation
+    console.log("Donation approved", donation.ID);
+  };
+
+  const handleReject = () => {
+    // Add logic for rejecting the donation
+    console.log("Donation rejected", donation.ID);
+  };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {/* Imagen principal */}
-      <Image source={{ uri: 'https://via.placeholder.com/300' }} style={styles.mainImage} />
-
-      {/* Miniaturas */}
-      <View style={styles.thumbnailContainer}>
-        <TouchableOpacity>
-          <Image source={{ uri: 'https://via.placeholder.com/60' }} style={styles.thumbnail} />
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <Image source={{ uri: 'https://via.placeholder.com/60' }} style={styles.thumbnail} />
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <Image source={{ uri: 'https://via.placeholder.com/60' }} style={styles.thumbnail} />
-        </TouchableOpacity>
-      </View>
-      
-      <View style={styles.optionsContainer}>
-        <TouchableOpacity style={styles.option}>
-          <Text style={styles.optionText}>Comida</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.option}>
-          <Text style={styles.optionText}>Ropa</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.option}>
-          <Text style={styles.optionText}>Medicina</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Datos de recolección */}
-      <Text style={styles.sectionHeader}>Datos de recolección</Text>
-      <View style={styles.textAreaContainer}>
-      </View>
-
-      {/* Comentarios previos */}
-      <Text style={styles.sectionHeader}>Comentarios previo a la recolección</Text>
-      <TextInput
-        style={styles.commentBox}
-        placeholder="Escribe tus comentarios..."
-        placeholderTextColor="#ccc"
-      />
-
-      {/* Botón de aprobar */}
-      <TouchableOpacity style={styles.approveButton}>
-        <Text style={styles.approveButtonText}>Aprobar</Text>
+    <ScrollView style={styles.container}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Icon name="arrow-back" size={24} color="#fff" />
+        <Text style={styles.backButtonText}>Regresar</Text>
       </TouchableOpacity>
+
+      {/* Title */}
+      <Text style={styles.title}>Detalles de la Donación</Text>
+
+      {/* Donation Information */}
+      <View style={styles.infoContainer}>
+        <Text style={styles.label}>Tipo:</Text>
+        <Text style={styles.value}>
+          {traductions[donation.type as keyof typeof traductions] || donation.type}
+        </Text>
+
+        <Text style={styles.label}>Detalles:</Text>
+        <Text style={styles.value}>{donation.details}</Text>
+
+        <Text style={styles.label}>Estado:</Text>
+        <Text style={styles.value}>
+          {traductions[donation.status as keyof typeof traductions] || donation.status}
+        </Text>
+
+        <Text style={styles.label}>Creado el:</Text>
+        <Text style={styles.value}>{formatDate(donation.CreatedAt)}</Text>
+
+        <Text style={styles.label}>Actualizado el:</Text>
+        <Text style={styles.value}>{formatDate(donation.UpdatedAt)}</Text>
+      </View>
+
+      {/* Images */}
+      {donation.images.length > 0 ? (
+        <View style={styles.imageContainer}>
+          <Text style={styles.label}>Imágenes:</Text>
+          {donation.images.map((image, index) => (
+            <Image
+              key={index}
+              source={{ uri: image }}
+              style={styles.image}
+              resizeMode="cover"
+            />
+          ))}
+        </View>
+      ) : (
+        <Text style={styles.noImagesText}>No hay imágenes disponibles.</Text>
+      )}
+
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={[styles.actionButton, styles.approveButton]} onPress={handleApprove}>
+          <Text style={styles.buttonText}>Aprobar</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.actionButton, styles.rejectButton]} onPress={handleReject}>
+          <Text style={styles.buttonText}>Rechazar</Text>
+        </TouchableOpacity>
+      </View>
+
     </ScrollView>
   );
 };
 
+const formatDate = (dateString: string) => {
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  };
+  return new Date(dateString).toLocaleDateString('es-ES', options); // Force Spanish localization
+};
+
+
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    flex: 1,
     backgroundColor: '#457B9D',
-    flexGrow: 1,
+    padding: 16,
   },
-  mainImage: {
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1D3557',
+    marginBottom: 16,
+  },
+  infoContainer: {
+    marginBottom: 16,
+    padding: 16,
+    backgroundColor: '#F1FAEE',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#457B9D',
+    marginBottom: 4,
+  },
+  value: {
+    fontSize: 16,
+    color: '#1D3557',
+    marginBottom: 12,
+  },
+  imageContainer: {
+    marginBottom: 16,
+  },
+  image: {
     width: '100%',
     height: 200,
-    borderRadius: 10,
-    marginBottom: 20,
-    backgroundColor: '#ccc',
+    marginVertical: 8,
+    borderRadius: 8,
   },
-  thumbnailContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  thumbnail: {
-    width: 60,
-    height: 60,
-    borderRadius: 5,
-    backgroundColor: '#ccc',
-  },
-  optionsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 20,
-  },
-  option: {
-    backgroundColor: '#1D3557',
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 5,
-  },
-  optionText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  sectionHeader: {
-    color: '#fff',
+  noImagesText: {
     fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 10,
+    color: '#6C757D',
+    textAlign: 'center',
+    marginVertical: 16,
   },
-  textAreaContainer: {
-    backgroundColor: '#6A8FA7',
-    borderRadius: 5,
-    padding: 10,
+  buttonContainer: {
+    marginTop: 16,
+    flexDirection: 'row',
+  },
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 20,
-    height: 80,
   },
-  textArea: {
-    height: 80,
-    color: '#fff',
-    textAlignVertical: 'top',
+  backButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+    marginLeft: 10,
   },
-  commentBox: {
-    backgroundColor: '#fff',
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 20,
-    color: '#000',
+  actionButton: {
+    flex: 1,
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: "center",
+    marginHorizontal: 10,
   },
   approveButton: {
-    backgroundColor: '#E63946',
-    paddingVertical: 15,
-    borderRadius: 5,
-    alignItems: 'center',
+    backgroundColor: "#2A9D8F",
   },
-  approveButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+  rejectButton: {
+    backgroundColor: "#E63946",
+  },
+  buttonText: {
+    color: "#fff",
     fontSize: 16,
+    fontWeight: "bold",
   },
 });
 
