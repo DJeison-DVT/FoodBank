@@ -4,6 +4,7 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import { Donation, StaffOrder } from "@/helpers/types";
 import { OrderStatus, translateOrderStatus } from "@/helpers/translations";
 import { UserData } from "@/helpers/auth";
+import BackButton from "@/components/BackButton";
 
 const DetalleOrden = ({ route, navigation }: any) => {
   const { user }: { user: UserData } = route.params;
@@ -97,10 +98,7 @@ const DetalleOrden = ({ route, navigation }: any) => {
   return (
     <View style={styles.container}>
       {/* Back Button */}
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Icon name="arrow-back" size={24} color="#fff" />
-        <Text style={styles.backButtonText}>Regresar</Text>
-      </TouchableOpacity>
+      <BackButton onPress={() => navigation.goBack()} />
 
       {/* Header */}
       <Text style={styles.header}>Detalles de la Orden</Text>

@@ -1,3 +1,4 @@
+import BackButton from "@/components/BackButton";
 import { UserData } from "@/helpers/auth";
 import { Order } from "@/helpers/types";
 import React, { useState } from "react";
@@ -47,10 +48,7 @@ const ScheduleOrder = ({ route, navigation }: any) => {
   return (
     <View style={styles.container}>
       {/* Back Button */}
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Icon name="arrow-back" size={24} color="#fff" />
-        <Text style={styles.backButtonText}>Regresar</Text>
-      </TouchableOpacity>
+      <BackButton onPress={() => navigation.goBack()} />
 
       {/* Header */}
       <Text style={styles.header}>Programar Recolección</Text>
