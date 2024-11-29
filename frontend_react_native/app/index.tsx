@@ -101,6 +101,25 @@ function UserStack({ user, updateUser }: { user: UserData; updateUser: (user: Us
         component={DonationDetailView}
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        name="Historial"
+        component={Historial}
+        initialParams={{ user }}
+        options={{ headerShown: false }}
+      />
+
+      <Stack.Screen
+        name="VerDonacion"
+        component={DetalleOrden}
+        initialParams={{ user }}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="DetalleDonacion"
+        component={DetalleDonacion}
+        initialParams={{ user }}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 }

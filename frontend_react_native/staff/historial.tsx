@@ -1,3 +1,4 @@
+import BackButton from "@/components/BackButton";
 import Header from "@/components/Header";
 import StaffFooter from "@/components/StaffFooter";
 import { getJwtToken } from "@/helpers/auth";
@@ -17,7 +18,7 @@ import {
 const Historial = ({ route, navigation }: any) => {
   const [orders, setOrders] = useState<StaffOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = route.params;
+  const { user, userView = false } = route.params;
 
   const fetchOrders = async () => {
     try {
@@ -97,6 +98,7 @@ const Historial = ({ route, navigation }: any) => {
   return (
     <View style={styles.container}>
       <Header title="Historial" />
+      <BackButton onPress={() => navigation.goBack()} />
       {loading ? (
         <ActivityIndicator size="large" color="#ECF0F1" />
       ) : (
@@ -107,8 +109,9 @@ const Historial = ({ route, navigation }: any) => {
           contentContainerStyle={styles.scrollContainer}
         />
       )}
-
-      <StaffFooter navigation={navigation} />
+      {!userView && (
+        <StaffFooter navigation={navigation} />
+      )}
     </View>
   );
 };
