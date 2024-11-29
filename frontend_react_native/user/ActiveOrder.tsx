@@ -7,6 +7,8 @@ import CryptoJS from 'crypto-js';
 import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 import { Donation, Order } from '@/helpers/types';
 import { decryptDonations } from '@/helpers/crypto';
+import QRCode from 'react-native-qrcode-svg';
+
 
 export default function ActiveOrder({ route, navigation }: { route: any; navigation: any }) {
   const [order, setOrder] = useState<Order | null>(null);
@@ -245,6 +247,12 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
       case "Scheduled":
         return (
           <View style={styles.statusContainer}>
+            <QRCode
+              value={order.user_id}
+              size={150}
+              color="black"
+              backgroundColor="white"
+            />
             <Text style={styles.infoText}>
               Estado: La recolección ha sido programada.
               <br />
@@ -337,12 +345,14 @@ const styles = StyleSheet.create({
   },
   statusContainer: {
     padding: 16,
+    gap: 16,
     marginVertical: 8,
     borderRadius: 8,
     backgroundColor: "#F8F9FA",
     borderWidth: 1,
     borderColor: "#E9ECEF",
     marginHorizontal: 16,
+    alignItems: 'center',
   },
   errorText: {
     fontSize: 16,

@@ -1,7 +1,7 @@
 import BackButton from '@/components/BackButton';
 import { Donation } from '@/helpers/types';
 import React from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, Button, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, Button, TouchableOpacity, Dimensions } from 'react-native';
 import Icon from "react-native-vector-icons/MaterialIcons";
 
 const DetalleDonacion = ({ route, navigation }: any) => {
@@ -62,15 +62,21 @@ const DetalleDonacion = ({ route, navigation }: any) => {
 
       {donation.images.length > 0 ? (
         <View style={styles.imageContainer}>
-          <Text style={styles.label}>Imágenes:</Text>
-          {donation.images.map((image, index) => (
-            <Image
-              key={index}
-              source={{ uri: image }}
-              style={styles.image}
-              resizeMode="cover"
-            />
-          ))}
+            <Text style={styles.label}>Imágenes:</Text>
+            <ScrollView 
+                horizontal={false} 
+                style={styles.imageScrollView}
+                contentContainerStyle={styles.imageScrollViewContent}
+            >
+                {donation.images.map((image, index) => (
+                    <Image
+                        key={index}
+                        source={{ uri: image }}
+                        style={styles.image}
+                        resizeMode="cover"
+                    />
+                ))}
+            </ScrollView>
         </View>
       ) : (
         <Text style={styles.noImagesText}>No hay imágenes disponibles.</Text>
@@ -99,6 +105,8 @@ const formatDate = (dateString: string) => {
   };
   return new Date(dateString).toLocaleDateString('es-ES', options); // Force Spanish localization
 };
+
+const { height } = Dimensions.get('window');
 
 
 const styles = StyleSheet.create({
@@ -139,12 +147,19 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     marginBottom: 16,
+    maxHeight: height * 0.4,
+  },
+  imageScrollView: {
+      flexGrow: 0,
+  },
+  imageScrollViewContent: {
+      paddingBottom: 16,
   },
   image: {
-    width: '100%',
-    height: 200,
-    marginVertical: 8,
-    borderRadius: 8,
+      width: '100%',
+      height: 200,
+      marginVertical: 8,
+      borderRadius: 8,
   },
   noImagesText: {
     fontSize: 16,

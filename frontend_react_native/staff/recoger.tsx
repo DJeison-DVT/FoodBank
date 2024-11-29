@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 
 const Pickup = ({ route, navigation }: any) => {
@@ -43,6 +44,28 @@ const Pickup = ({ route, navigation }: any) => {
     }
   };
 
+  const handlePickUp = async (order_id: number) => {
+    try {
+        let response = await fetch(`http://localhost:8080/orders/pickup?user_id=${user.id}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ order_id: order_id }),
+        });
+
+        if (response.ok) {
+            Alert.alert("Success", "Order picked up successfully!");
+            navigation.navigate("Historial");
+        } else {
+            Alert.alert("Error", "Failed to pick up order.");
+        }
+    } catch (error) {
+        console.error("Error picking up order:", error);
+        Alert.alert("Error", "An unexpected error occurred.");
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
       fetchOrders();
@@ -53,7 +76,8 @@ const Pickup = ({ route, navigation }: any) => {
     <TouchableOpacity
       style={styles.orderCard}
       // TODO Si quieres meter un detail view para que hay sea la camara
-      onPress={() => navigation.navigate("", { order: item })}
+      // onPress={() => navigation.navigate("QRPickUp", { order: item })}
+      onPress={() => handlePickUp(item.ID)}
     >
       <View style={styles.cardHeader}>
         <Text style={styles.orderId}>Orden ID: {item.ID}</Text>

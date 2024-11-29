@@ -17,6 +17,7 @@ import DonationDetailView from '@/user/DonationDetailView';
 import Profile from '@/user/Profile';
 import Schedule from '@/staff/Schedule';
 import ScheduleOrder from '@/staff/ScheduleOrder';
+import QRPickUp from '@/staff/QRPickUp';
 
 const Stack = createStackNavigator();
 
@@ -62,6 +63,12 @@ function StaffStack({ user }: { user: UserData }) {
       <Stack.Screen
         name="DetalleDonacion"
         component={DetalleDonacion}
+        initialParams={{ user }}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="QRPickUp"
+        component={QRPickUp}
         initialParams={{ user }}
         options={{ headerShown: false }}
       />
