@@ -3,7 +3,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, Button, TouchableOpacity } from 'react-native';
 import Icon from "react-native-vector-icons/MaterialIcons";
 
-const DetalleDonacion = ({ route, navigation }: { route: any; navigation: any }) => {
+const DetalleOrden = ({ route, navigation }: { route: any; navigation: any }) => {
   const { donation }: { donation: Donation } = route.params;
 
   type DonationType = 'Medicine' | 'Food' | 'Clothes';
@@ -191,4 +191,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DetalleDonacion;
+export default DetalleOrden;

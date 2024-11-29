@@ -4,11 +4,11 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { fetchUserInfo, UserData } from '@/helpers/auth';
 
 import Login from './login';
-import Dashboard from '../staff/dashboard';
-import Pickup from '../staff/recoger';
-import Historial from '../staff/historial';
-import VerDonacion from '../staff/verDonacion';
-import DetalleDonacion from '../staff/detalleDonacion';
+import Dashboard from '@/staff/dashboard';
+import Pickup from '@/staff/recoger';
+import Historial from '@/staff/historial';
+import DetalleDonacion from '@/staff/DetalleDonacion';
+import DetalleOrden from '@/staff/DetalleOrden';
 
 import Bienvenido from '@/user/bienvenidos';
 import ActiveOrder from '@/user/ActiveOrder';
@@ -41,13 +41,13 @@ function StaffStack({ user }: { user: UserData }) {
       />
       <Stack.Screen
         name="VerDonacion"
-        component={VerDonacion}
+        component={DetalleDonacion}
         initialParams={{ user }}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name="DetalleDonacion"
-        component={DetalleDonacion}
+        component={DetalleOrden}
         initialParams={{ user }}
         options={{ headerShown: false }}
       />
