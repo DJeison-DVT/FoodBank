@@ -61,7 +61,8 @@ const Schedule = ({ route, navigation }: any) => {
             <View style={styles.cardBody}>
                 <Text style={styles.cardText}>Cliente: {item.user.name || "N/A"}</Text>
                 <Text style={styles.cardText}>Creado: {formatDate(item.CreatedAt)}</Text>
-                <Text style={styles.cardText}>Dirección: {item.user.address}</Text>
+                <Text style={styles.cardTextImportant}>Dirección: {item.user.address}</Text>
+                <Text style={styles.cardTextImportant}>Indicaciones de entrega: {item.user.pickup_details}</Text>
             </View>
 
             <TouchableOpacity
@@ -134,6 +135,11 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: "bold",
         color: "#ECF0F1",
+    },
+    cardTextImportant: {
+        fontSize: 16,
+        color: "#ECF0F1",
+        fontWeight: "bold",
     },
     orderStatus: {
         fontSize: 14,

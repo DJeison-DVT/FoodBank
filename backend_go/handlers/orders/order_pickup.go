@@ -4,6 +4,7 @@ import (
 	"backend_go/handlers"
 	"backend_go/models"
 	"backend_go/services"
+	"encoding/json"
 	"net/http"
 
 	"golang.org/x/crypto/bcrypt"
@@ -11,7 +12,7 @@ import (
 
 func OrderPickupHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8081")
-	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
 	if r.Method == http.MethodOptions {
@@ -34,7 +35,22 @@ func OrderPickupHandler(w http.ResponseWriter, r *http.Request) {
 	if user.Role != "staff" {
 		handlers.RespondWithError(w, http.StatusForbidden, "Only staff can schedule orders")
 	} else {
-		pickupOrder(w, r)
+		switch r.Method {
+		case http.MethodPost:
+			pickupOrder(w, r)
+		case http.MethodGet:
+			orders, err := services.GetPickupPendingOrders()
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			if err := json.NewEncoder(w).Encode(orders); err != nil {
+				http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			}
+
+		}
 	}
 }
 
@@ -58,7 +74,7 @@ func pickupOrder(w http.ResponseWriter, r *http.Request) {
 		handlers.RespondWithError(w, http.StatusBadRequest, "Order not found")
 		return
 	}
-	
+
 	err = bcrypt.CompareHashAndPassword([]byte(order.VerificationQRCode), []byte(order.UserID))
 	if err != nil {
 		handlers.RespondWithError(w, http.StatusBadRequest, "Invalid QR validation")
