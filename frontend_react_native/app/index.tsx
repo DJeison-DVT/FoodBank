@@ -41,13 +41,13 @@ function StaffStack({ user }: { user: UserData }) {
       />
       <Stack.Screen
         name="VerDonacion"
-        component={DetalleDonacion}
+        component={DetalleOrden}
         initialParams={{ user }}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name="DetalleDonacion"
-        component={DetalleOrden}
+        component={DetalleDonacion}
         initialParams={{ user }}
         options={{ headerShown: false }}
       />

@@ -1,89 +1,162 @@
-import React from "react";
-import { View, Text, Image, StyleSheet, TouchableOpacity, FlatList } from "react-native";
+import { Donation } from '@/helpers/types';
+import React from 'react';
+import { View, Text, StyleSheet, Image, ScrollView, Button, TouchableOpacity } from 'react-native';
 import Icon from "react-native-vector-icons/MaterialIcons";
-import { StaffOrder } from "@/helpers/types";
-import { OrderStatus, translateOrderStatus } from "@/helpers/translations";
 
-const DetalleDonacion = ({ route, navigation }: any) => {
-  const { order }: { order: StaffOrder } = route.params;
+const DetalleDonacion = ({ route, navigation }: { route: any; navigation: any }) => {
+  const { donation }: { donation: Donation } = route.params;
 
-  const renderDonation = ({ item }: { item: any }) => {
-    const getBackgroundColor = (status: string) => {
-      switch (status) {
-        case "Pending":
-          return "#ADD8E6"; // Light blue for pending
-        case "Approved":
-          return "#C8E6C9"; // Light green for approved
-        case "Rejected":
-          return "#FFCDD2"; // Light red for rejected
-        default:
-          return "#E0E0E0"; // Light gray for unknown statuses
-      }
-    };
+  type DonationType = 'Medicine' | 'Food' | 'Clothes';
+  type DonationStatus = 'BeingModified' | 'Completed' | 'Pending' | 'Approved' | 'Rejected';
 
-    return (
-      <TouchableOpacity
-        style={[styles.donationCard, { backgroundColor: getBackgroundColor(item.status) }]}
-        onPress={() => navigation.navigate("DetalleDonacion", { donation: item })}
-      >
-        <Image source={{ uri: item.images?.[0] || "https://via.placeholder.com/100" }} style={styles.image} />
-        <View style={styles.cardContent}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.indexText}>Estado: {item.status}</Text>
-          </View>
-          <Text style={styles.itemText}>Tipo: {item.type}</Text>
-          <Text style={styles.detailsText}>Detalles: {item.details}</Text>
-        </View>
-      </TouchableOpacity>
-    );
+  const traductions: Record<DonationType | DonationStatus, string> = {
+    Medicine: 'Medicina',
+    Food: 'Comida',
+    Clothes: 'Ropa',
+    BeingModified: 'Siendo Modificada',
+    Completed: 'Completada',
+    Pending: 'Pendiente',
+    Approved: 'Aprobada',
+    Rejected: 'Rechazada',
+  };
+
+  const handleApprove = () => {
+    // Add logic for approving the donation
+    console.log("Donation approved", donation.ID);
+  };
+
+  const handleReject = () => {
+    // Add logic for rejecting the donation
+    console.log("Donation rejected", donation.ID);
   };
 
   return (
-    <View style={styles.container}>
-      {/* Back Button */}
+    <ScrollView style={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Icon name="arrow-back" size={24} color="#fff" />
         <Text style={styles.backButtonText}>Regresar</Text>
       </TouchableOpacity>
 
-      {/* Header */}
-      <Text style={styles.header}>Detalles de la Orden</Text>
+      {/* Title */}
+      <Text style={styles.title}>Detalles de la Donación</Text>
 
-      {/* Order Info */}
-      <View style={styles.orderDetails}>
-        <Text style={styles.infoText}>ID de Orden: {order.ID}</Text>
-        <Text style={styles.infoText}>Estado: {translateOrderStatus(order.status)}</Text>
-        <Text style={styles.infoText}>Nombre del Usuario: {order.user.name}</Text>
-        <Text style={styles.infoText}>Correo Electrónico: {order.user.email}</Text>
-        <Text style={styles.infoText}>Dirección: {order.user.address || "No proporcionada"}</Text>
-        <Text style={styles.infoText}>
-          Detalles de Recolección: {order.user.pickup_details || "No proporcionados"}
+      {/* Donation Information */}
+      <View style={styles.infoContainer}>
+        <Text style={styles.label}>Tipo:</Text>
+        <Text style={styles.value}>
+          {traductions[donation.type as keyof typeof traductions] || donation.type}
         </Text>
 
-        {order.status == OrderStatus.Scheduled && (
-          <>
-            <Text style={styles.infoText}>Fecha de Recolección: {order.PickupDate || "No asignada"}</Text>
-            <Text style={styles.infoText}>Hora de Recolección: {order.PickupTime || "No asignada"}</Text>
-          </>
-        )}
+        <Text style={styles.label}>Detalles:</Text>
+        <Text style={styles.value}>{donation.details}</Text>
+
+        <Text style={styles.label}>Estado:</Text>
+        <Text style={styles.value}>
+          {traductions[donation.status as keyof typeof traductions] || donation.status}
+        </Text>
+
+        <Text style={styles.label}>Creado el:</Text>
+        <Text style={styles.value}>{formatDate(donation.CreatedAt)}</Text>
+
+        <Text style={styles.label}>Actualizado el:</Text>
+        <Text style={styles.value}>{formatDate(donation.UpdatedAt)}</Text>
       </View>
 
-      {/* Donations List */}
-      <FlatList
-        data={order.donations}
-        renderItem={renderDonation}
-        keyExtractor={(item, index) => index.toString()}
-        contentContainerStyle={styles.listContainer}
-      />
-    </View>
+      {donation.images.length > 0 ? (
+        <View style={styles.imageContainer}>
+          <Text style={styles.label}>Imágenes:</Text>
+          {donation.images.map((image, index) => (
+            <Image
+              key={index}
+              source={{ uri: image }}
+              style={styles.image}
+              resizeMode="cover"
+            />
+          ))}
+        </View>
+      ) : (
+        <Text style={styles.noImagesText}>No hay imágenes disponibles.</Text>
+      )}
+
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={[styles.actionButton, styles.approveButton]} onPress={handleApprove}>
+          <Text style={styles.buttonText}>Aprobar</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.actionButton, styles.rejectButton]} onPress={handleReject}>
+          <Text style={styles.buttonText}>Rechazar</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 };
+
+const formatDate = (dateString: string) => {
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  };
+  return new Date(dateString).toLocaleDateString('es-ES', options); // Force Spanish localization
+};
+
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#457B9D",
-    padding: 20,
+    backgroundColor: '#457B9D',
+    padding: 16,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1D3557',
+    marginBottom: 16,
+  },
+  infoContainer: {
+    marginBottom: 16,
+    padding: 16,
+    backgroundColor: '#F1FAEE',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#457B9D',
+    marginBottom: 4,
+  },
+  value: {
+    fontSize: 16,
+    color: '#1D3557',
+    marginBottom: 12,
+  },
+  imageContainer: {
+    marginBottom: 16,
+  },
+  image: {
+    width: '100%',
+    height: 200,
+    marginVertical: 8,
+    borderRadius: 8,
+  },
+  noImagesText: {
+    fontSize: 16,
+    color: '#6C757D',
+    textAlign: 'center',
+    marginVertical: 16,
+  },
+  buttonContainer: {
+    marginTop: 16,
+    flexDirection: 'row',
   },
   backButton: {
     flexDirection: "row",
@@ -96,63 +169,23 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginLeft: 10,
   },
-  header: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-  orderDetails: {
-    backgroundColor: "#6A8FA7",
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 20,
-  },
-  infoText: {
-    color: "#fff",
-    fontSize: 14,
-    marginBottom: 5,
-  },
-  listContainer: {
-    paddingBottom: 20,
-  },
-  donationCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-    marginVertical: 8,
-    backgroundColor: "#F1FAEE",
-    borderRadius: 8,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  image: {
-    width: 60,
-    height: 60,
-    marginRight: 15,
-    backgroundColor: "#ccc",
-    borderRadius: 5,
-  },
-  cardContent: {
+  actionButton: {
     flex: 1,
-    marginLeft: 16,
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: "center",
+    marginHorizontal: 10,
   },
-  indexText: {
+  approveButton: {
+    backgroundColor: "#2A9D8F",
+  },
+  rejectButton: {
+    backgroundColor: "#E63946",
+  },
+  buttonText: {
+    color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
-    color: "#457B9D",
-  },
-  itemText: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  detailsText: {
-    fontSize: 16,
-    color: "#1D3557",
-    marginVertical: 4,
   },
 });
 
