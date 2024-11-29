@@ -15,6 +15,8 @@ import ActiveOrder from '@/user/ActiveOrder';
 import Donation from '@/user/Donation';
 import DonationDetailView from '@/user/DonationDetailView';
 import Profile from '@/user/Profile';
+import Schedule from '@/staff/Schedule';
+import ScheduleOrder from '@/staff/ScheduleOrder';
 
 const Stack = createStackNavigator();
 
@@ -40,14 +42,26 @@ function StaffStack({ user }: { user: UserData }) {
         options={{ headerShown: false }}
       />
       <Stack.Screen
+        name="Schedule"
+        component={Schedule}
+        initialParams={{ user }}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ScheduleOrder"
+        component={ScheduleOrder}
+        initialParams={{ user }}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
         name="VerDonacion"
-        component={DetalleDonacion}
+        component={DetalleOrden}
         initialParams={{ user }}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name="DetalleDonacion"
-        component={DetalleOrden}
+        component={DetalleDonacion}
         initialParams={{ user }}
         options={{ headerShown: false }}
       />
@@ -85,6 +99,25 @@ function UserStack({ user, updateUser }: { user: UserData; updateUser: (user: Us
       <Stack.Screen
         name="DonationDetailView"
         component={DonationDetailView}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Historial"
+        component={Historial}
+        initialParams={{ user }}
+        options={{ headerShown: false }}
+      />
+
+      <Stack.Screen
+        name="VerDonacion"
+        component={DetalleOrden}
+        initialParams={{ user }}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="DetalleDonacion"
+        component={DetalleDonacion}
+        initialParams={{ user }}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

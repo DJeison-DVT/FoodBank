@@ -80,14 +80,12 @@ func GetUserActiveOrder(userID string) (models.Order, error) {
 func GetCompletedOrders(userId string) ([]models.Order, error) {
 	var orders []models.Order
 
-	query := database.DB.Preload("Donations")
-
-	if userId != "" {
-		query = query.Where("user_id = ?", userId)
-	}
-
-	if err := query.Where("status = ?", models.StatusPickedUp).Find(&orders).Error; err != nil {
-		return orders, err
+	if err := database.DB.
+		Where("orders.status = ?", models.StatusPickedUp).
+		Preload("Donations").
+		Preload("User").
+		Find(&orders).Error; err != nil {
+		return nil, err
 	}
 
 	return orders, nil

@@ -32,18 +32,26 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
             Authorization: `Bearer ${await getJwtToken()}`,
           },
         });
+
+        if (!response.ok) {
+          console.error('Failed to create new order:', response.status, response.statusText);
+          return;
+        }
+
+        const data: Order = await response.json();
+        setOrder(data);
+      } else {
+        if (!response.ok) {
+          console.error('Failed to fetch order:', response.status, response.statusText);
+          return;
+        }
+
+        const data: Order = await response.json();
+
+        data.donations = decryptDonations(data.donations);
+
+        setOrder(data);
       }
-
-      if (!response.ok) {
-        console.error('Failed to fetch order:', response.status, response.statusText);
-        return;
-      }
-
-      const data: Order = await response.json();
-
-      data.donations = decryptDonations(data.donations);
-
-      setOrder(data);
     } catch (error) {
       console.error('Error fetching active order:', error);
     }
@@ -203,6 +211,11 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
   const renderStatusComponent = (status: string) => {
     switch (status) {
       case "NeedsToBeChecked":
+        const hasRejectedDonations = order.donations.some((donation) => donation.status === "Rejected");
+        if (!hasRejectedDonations) {
+          order.status = "BeingModified";
+          return null;
+        }
         return (
           <View style={styles.statusContainer}>
             <Text style={styles.errorText}>
@@ -234,7 +247,9 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
           <View style={styles.statusContainer}>
             <Text style={styles.infoText}>
               Estado: La recolección ha sido programada.
+              <br />
               {order.PickupDate && `Fecha de recolección: ${formatDate(order.PickupDate)}`}
+              <br />
               {order.PickupTime && `Hora de recolección: ${order.PickupTime}`}
             </Text>
           </View>
@@ -285,11 +300,20 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
             <FontAwesome name="plus" size={24} color="#1D3557" />
           </TouchableOpacity>
         )}
+        <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Historial', { userView: true })}>
+          <FontAwesome name="history" size={24} color="#1D3557" />
+        </TouchableOpacity>
         {canBeModified() &&
           <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('Profile', { user })}>
             <FontAwesome name="user" size={24} color="#1D3557" />
           </TouchableOpacity>
         }
+        <TouchableOpacity style={styles.iconButton} onPress={async () => {
+          await deleteJwtToken();
+          navigation.navigate('Login');
+        }}>
+          <FontAwesome name="sign-out" size={24} color="#1D3557" />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -356,7 +380,7 @@ const styles = StyleSheet.create({
     bottom: 80, // Just above the footer
     left: 16,
     right: 16,
-    backgroundColor: '#457B9D',
+    backgroundColor: '#C7EA46',
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: 'center',

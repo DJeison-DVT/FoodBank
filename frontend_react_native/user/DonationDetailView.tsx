@@ -1,3 +1,4 @@
+import BackButton from '@/components/BackButton';
 import { Donation } from '@/helpers/types';
 import React from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, Button, TouchableOpacity, Dimensions } from 'react-native';
@@ -23,10 +24,7 @@ const DonationDetailView = ({ route, navigation }: { route: any; navigation: any
 
     return (
         <ScrollView style={styles.container}>
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                <Icon name="arrow-back" size={24} color="#fff" />
-                <Text style={styles.backButtonText}>Regresar</Text>
-            </TouchableOpacity>
+            <BackButton onPress={() => navigation.goBack()} />
 
             {/* Title */}
             <Text style={styles.title}>Detalles de la Donación</Text>
