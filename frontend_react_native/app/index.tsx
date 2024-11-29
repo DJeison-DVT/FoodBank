@@ -15,6 +15,8 @@ import ActiveOrder from '@/user/ActiveOrder';
 import Donation from '@/user/Donation';
 import DonationDetailView from '@/user/DonationDetailView';
 import Profile from '@/user/Profile';
+import Schedule from '@/staff/Schedule';
+import ScheduleOrder from '@/staff/ScheduleOrder';
 
 const Stack = createStackNavigator();
 
@@ -36,6 +38,18 @@ function StaffStack({ user }: { user: UserData }) {
       <Stack.Screen
         name="Historial"
         component={Historial}
+        initialParams={{ user }}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Schedule"
+        component={Schedule}
+        initialParams={{ user }}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ScheduleOrder"
+        component={ScheduleOrder}
         initialParams={{ user }}
         options={{ headerShown: false }}
       />
