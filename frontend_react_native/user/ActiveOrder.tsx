@@ -203,6 +203,11 @@ export default function ActiveOrder({ route, navigation }: { route: any; navigat
   const renderStatusComponent = (status: string) => {
     switch (status) {
       case "NeedsToBeChecked":
+        const hasRejectedDonations = order.donations.some((donation) => donation.status === "Rejected");
+        if (!hasRejectedDonations) {
+          order.status = "BeingModified";
+          return null;
+        }
         return (
           <View style={styles.statusContainer}>
             <Text style={styles.errorText}>
@@ -356,7 +361,7 @@ const styles = StyleSheet.create({
     bottom: 80, // Just above the footer
     left: 16,
     right: 16,
-    backgroundColor: '#457B9D',
+    backgroundColor: '#C7EA46',
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: 'center',
