@@ -10,6 +10,7 @@ const DetalleOrden = ({ route, navigation }: any) => {
   const { order }: { order: StaffOrder } = route.params;
   const [rejectedDonationsIDs, setRejectedDonationsIDs] = React.useState<number[]>([]);
   const [approvedDonationsIDs, setApprovedDonationsIDs] = React.useState<number[]>([]);
+  const { nonEditable }: { nonEditable: boolean } = route.params || false;
 
   const handleSubmit = async () => {
     try {
@@ -70,6 +71,7 @@ const DetalleOrden = ({ route, navigation }: any) => {
             donation: item,
             onApprove: (id: number) => handleApproveDonation(id),
             onReject: (id: number) => handleRejectDonation(id),
+            nonEditable,
           })
         }
       >
@@ -131,7 +133,7 @@ const DetalleOrden = ({ route, navigation }: any) => {
       />
 
       {/* Submit Button */}
-      {rejectedDonationsIDs.length + approvedDonationsIDs.length === order.donations.length && (
+      {!nonEditable && rejectedDonationsIDs.length + approvedDonationsIDs.length === order.donations.length && (
         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
           <Text style={styles.submitButtonText}>Verificar</Text>
         </TouchableOpacity>

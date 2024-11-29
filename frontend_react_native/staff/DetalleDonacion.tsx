@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, Image, ScrollView, Button, TouchableOpacity } f
 import Icon from "react-native-vector-icons/MaterialIcons";
 
 const DetalleDonacion = ({ route, navigation }: any) => {
-  const { donation, onApprove, onReject }: { donation: Donation; onApprove: (id: number) => void; onReject: (id: number) => void } = route.params;
+  const { donation, onApprove, onReject, nonEditable }: { donation: Donation; onApprove: (id: number) => void; onReject: (id: number) => void, nonEditable: Boolean } = route.params;
 
   type DonationType = 'Medicine' | 'Food' | 'Clothes';
   type DonationStatus = 'BeingModified' | 'Completed' | 'Pending' | 'Approved' | 'Rejected';
@@ -77,16 +77,16 @@ const DetalleDonacion = ({ route, navigation }: any) => {
       ) : (
         <Text style={styles.noImagesText}>No hay imágenes disponibles.</Text>
       )}
-
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={[styles.actionButton, styles.approveButton]} onPress={handleApprove}>
-          <Text style={styles.buttonText}>Aprobar</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionButton, styles.rejectButton]} onPress={handleReject}>
-          <Text style={styles.buttonText}>Rechazar</Text>
-        </TouchableOpacity>
-      </View>
+      {!nonEditable && (
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={[styles.actionButton, styles.approveButton]} onPress={handleApprove}>
+            <Text style={styles.buttonText}>Aprobar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.actionButton, styles.rejectButton]} onPress={handleReject}>
+            <Text style={styles.buttonText}>Rechazar</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </ScrollView>
   );
 };

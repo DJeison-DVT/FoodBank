@@ -1,152 +1,163 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
-import Footer from './footer';
-import Icon from 'react-native-vector-icons/MaterialIcons'; // Asegúrate de tener esta biblioteca instalada.
+import Header from "@/components/Header";
+import StaffFooter from "@/components/StaffFooter";
+import { getJwtToken } from "@/helpers/auth";
+import { decryptDonations } from "@/helpers/crypto";
+import { StaffOrder } from "@/helpers/types";
+import { useFocusEffect } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
 
-type RootStackParamList = {
-  Dashboard: undefined;
-  Pickup: undefined;
-  Historial: undefined;
-};
+const Historial = ({ route, navigation }: any) => {
+  const [orders, setOrders] = useState<StaffOrder[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = route.params;
 
-const Historial = () => {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const fetchOrders = async () => {
+    try {
+      const query = `http://localhost:8080/orders/history?user_id=${user.id}`;
+      const response = await fetch(query, {
+        headers: {
+          Authorization: `Bearer ${getJwtToken()}`,
+        },
+      });
 
-  const reviewCount = users.filter(user => user.status === 'Revisar').length;
-  const pickUpCount = users.filter(user => user.status === 'Recoger').length;
+      if (!response.ok) {
+        throw new Error("Error fetching orders");
+      }
+      const data: StaffOrder[] = await response.json();
+      for (const order of data) {
+        order.donations = decryptDonations(order.donations);
+      }
+      setOrders(data);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const handleNavigation = (screen: keyof RootStackParamList) => {
-    navigation.navigate(screen);
+  useFocusEffect(
+    useCallback(() => {
+      fetchOrders();
+    }, [])
+  );
+
+  const renderOrder = ({ item }: { item: StaffOrder }) => (
+    <TouchableOpacity
+      style={styles.orderCard}
+      onPress={() => navigation.navigate("VerDonacion", { order: item, nonEditable: true })}
+    >
+      <View style={styles.cardHeader}>
+        <Text style={styles.orderId}>Orden ID: {item.ID}</Text>
+      </View>
+
+      <View style={styles.cardBody}>
+        <Text style={styles.cardText}>Cliente: {item.user.name || "N/A"}</Text>
+        <Text style={styles.cardText}>Creado: {formatDate(item.CreatedAt)}</Text>
+        {item.PickupDate && item.PickupTime && (
+          <Text style={styles.cardText}>Recogido el: {formatDate(item.PickupDate)} {item.PickupTime}</Text>
+        )}
+        <Text style={styles.cardText}>Dirección: {item.user.address}</Text>
+      </View>
+
+      <TouchableOpacity
+        style={styles.detailButton}
+        disabled
+      >
+        <Text style={styles.detailButtonText}>Ver Detalles</Text>
+      </TouchableOpacity>
+    </TouchableOpacity>
+  );
+
+  const getStatusStyle = (status: string) => {
+    switch (status) {
+      case "Pending":
+        return { color: "#FFA500" }; // Orange for pending
+      case "Completed":
+        return { color: "#2A9D8F" }; // Green for completed
+      case "Rejected":
+        return { color: "#E63946" }; // Red for rejected
+      default:
+        return { color: "#ECF0F1" }; // Default white
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Historial:</Text>
+      <Header title="Historial" />
+      {loading ? (
+        <ActivityIndicator size="large" color="#ECF0F1" />
+      ) : (
+        <FlatList
+          data={orders}
+          renderItem={renderOrder}
+          keyExtractor={(item) => item.ID.toString()}
+          contentContainerStyle={styles.scrollContainer}
+        />
+      )}
 
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {users.map((user, index) => (
-          <View key={index} style={styles.userItem}>
-            <TouchableOpacity style={styles.iconButton}>
-              <Icon name="chevron-left" size={24} color="#fff" />
-            </TouchableOpacity>
-            <Image source={{ uri: 'https://via.placeholder.com/100' }} style={styles.image} />
-            <View style={styles.userDetails}>
-              <TouchableOpacity style={styles.reviewButton}>
-                <Text style={styles.buttonText}>Descripción</Text>
-              </TouchableOpacity>
-              <Text style={styles.userLabel}>{`#70 ${user.label}. ${user.additionalLabels?.join(', ') || ''}`}</Text>
-            </View>
-            <TouchableOpacity style={styles.iconButton}>
-              <Icon name="chevron-right" size={24} color="#fff" />
-            </TouchableOpacity>
-          </View>
-        ))}
-      </ScrollView>
-
-      {/* Footer Component */}
-        <Footer reviewCount={reviewCount} pickUpCount={pickUpCount} setCurrentScreen={handleNavigation} />
+      <StaffFooter navigation={navigation} />
     </View>
   );
 };
 
-const users = [
-  { label: 'Medicina', status: 'Revisar' },
-  { label: 'Medicina', status: 'Revisar', additionalLabels: ['Ropa', 'Comida'] },
-  { label: 'Comida', status: 'Recoger' },
-  { label: 'Ropa', status: 'Recoger' },
-];
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#457B9D',
-    paddingTop: 20,
-  },
-  header: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginLeft: 20,
-    marginBottom: 10,
+    backgroundColor: "#457B9D",
   },
   scrollContainer: {
-    paddingBottom: 20,
+    paddingVertical: 20,
   },
-  userItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#6a8fa7',
-    padding: 15,
+  orderCard: {
+    backgroundColor: "#1D3557",
     marginHorizontal: 20,
     marginVertical: 10,
     borderRadius: 10,
+    padding: 15,
   },
-  iconButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 5,
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10,
   },
-  image: {
-    width: 60,
-    height: 60,
-    marginHorizontal: 10,
-    borderRadius: 30,
-    backgroundColor: '#ccc',
+  orderId: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#ECF0F1",
   },
-  userDetails: {
-    flex: 1,
-    flexDirection: 'column',
-  },
-  userLabel: {
-    color: '#fff',
+  orderStatus: {
     fontSize: 14,
-    marginTop: 5,
+    fontWeight: "bold",
   },
-  reviewButton: {
-    backgroundColor: '#1D3557',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+  cardBody: {
+    marginBottom: 10,
+  },
+  cardText: {
+    fontSize: 14,
+    color: "#ECF0F1",
+  },
+  detailButton: {
+    backgroundColor: "#E63946",
+    paddingVertical: 8,
     borderRadius: 5,
+    alignItems: "center",
   },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  footerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#254b62',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-  },
-  footerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1D3557',
-    padding: 10,
-    borderRadius: 5,
-  },
-  footerButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    marginRight: 5,
-  },
-  badge: {
-    backgroundColor: '#E63946',
-    color: '#fff',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
-    fontWeight: 'bold',
-  },
-  iconFooter: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 10,
-    backgroundColor: '#1D3557',
-    borderRadius: 5,
+  detailButtonText: {
+    color: "#ECF0F1",
+    fontWeight: "bold",
   },
 });
 
