@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity, FlatList } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { Donation, StaffOrder } from "@/helpers/types";
@@ -13,7 +13,7 @@ const DetalleOrden = ({ route, navigation }: any) => {
 
   const handleSubmit = async () => {
     try {
-      const query = `http://localhost:8080/orders?user_id=${user.id}`
+      const query = `http://localhost:8080/orders/verification?user_id=${user.id}`
       console.log(query)
       console.log(JSON.stringify({
         order_id: order.ID,
@@ -84,6 +84,13 @@ const DetalleOrden = ({ route, navigation }: any) => {
       </TouchableOpacity>
     );
   };
+
+  useEffect(() => {
+    const approvedIDs = order.donations
+      .filter((donation) => donation.status === "Approved") // Filter donations with status "Approved"
+      .map((donation) => donation.ID);
+    setApprovedDonationsIDs(approvedIDs);
+  }, []);
 
   return (
     <View style={styles.container}>
