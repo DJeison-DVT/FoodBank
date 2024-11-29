@@ -1,7 +1,8 @@
 import { getJwtToken } from "@/helpers/auth";
 import { decryptDonations } from "@/helpers/crypto";
 import { StaffOrder } from "@/helpers/types";
-import React, { useEffect, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -40,9 +41,11 @@ const Dashboard = ({ route, navigation }: any) => {
     }
   };
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchOrders();
+    }, [])
+  );
 
   const renderOrder = ({ item }: { item: StaffOrder }) => (
     <TouchableOpacity

@@ -1,30 +1,77 @@
 import React from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity, FlatList } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import { StaffOrder } from "@/helpers/types";
+import { Donation, StaffOrder } from "@/helpers/types";
 import { OrderStatus, translateOrderStatus } from "@/helpers/translations";
+import { UserData } from "@/helpers/auth";
 
 const DetalleOrden = ({ route, navigation }: any) => {
+  const { user }: { user: UserData } = route.params;
   const { order }: { order: StaffOrder } = route.params;
+  const [rejectedDonationsIDs, setRejectedDonationsIDs] = React.useState<number[]>([]);
+  const [approvedDonationsIDs, setApprovedDonationsIDs] = React.useState<number[]>([]);
 
-  const renderDonation = ({ item }: { item: any }) => {
-    const getBackgroundColor = (status: string) => {
-      switch (status) {
-        case "Pending":
-          return "#ADD8E6"; // Light blue for pending
-        case "Approved":
-          return "#C8E6C9"; // Light green for approved
-        case "Rejected":
-          return "#FFCDD2"; // Light red for rejected
-        default:
-          return "#E0E0E0"; // Light gray for unknown statuses
+  const handleSubmit = async () => {
+    try {
+      const query = `http://localhost:8080/orders?user_id=${user.id}`
+      console.log(query)
+      console.log(JSON.stringify({
+        order_id: order.ID,
+        rejected_donations: rejectedDonationsIDs,
+      }))
+      const response = await fetch(query, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          order_id: order.ID,
+          rejected_donations: rejectedDonationsIDs,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Error al verificar la orden");
       }
-    };
+
+      navigation.goBack();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleApproveDonation = (id: number) => {
+    setApprovedDonationsIDs((prev) => [...prev, id]);
+    setRejectedDonationsIDs((prev) => prev.filter((donationId) => donationId !== id)); // Remove from rejected if previously added
+  };
+
+  const handleRejectDonation = (id: number) => {
+    setRejectedDonationsIDs((prev) => [...prev, id]);
+    setApprovedDonationsIDs((prev) => prev.filter((donationId) => donationId !== id)); // Remove from approved if previously added
+  };
+
+
+  const renderDonation = ({ item }: { item: Donation }) => {
+    const statusColor = (id: number) => {
+      if (rejectedDonationsIDs.includes(id)) {
+        return "#FFCDD2";
+      } else if (approvedDonationsIDs.includes(id)) {
+        return "#C8E6C9";
+      }
+      return "#ADD8E6";
+    }
+
 
     return (
       <TouchableOpacity
-        style={[styles.donationCard, { backgroundColor: getBackgroundColor(item.status) }]}
-        onPress={() => navigation.navigate("DetalleDonacion", { donation: item })}
+        style={[styles.donationCard, { backgroundColor: statusColor(item.ID) }]}
+        onPress={() =>
+          navigation.navigate("DetalleDonacion", {
+            donation: item,
+            onApprove: (id: number) => handleApproveDonation(id),
+            onReject: (id: number) => handleRejectDonation(id),
+          })
+        }
       >
         <Image source={{ uri: item.images?.[0] || "https://via.placeholder.com/100" }} style={styles.image} />
         <View style={styles.cardContent}>
@@ -75,6 +122,13 @@ const DetalleOrden = ({ route, navigation }: any) => {
         keyExtractor={(item, index) => index.toString()}
         contentContainerStyle={styles.listContainer}
       />
+
+      {/* Submit Button */}
+      {rejectedDonationsIDs.length + approvedDonationsIDs.length === order.donations.length && (
+        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+          <Text style={styles.submitButtonText}>Verificar</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -101,6 +155,17 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 20,
+  },
+  submitButton: {
+    backgroundColor: "#2A9D8F",
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  submitButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
   orderDetails: {
     backgroundColor: "#6A8FA7",

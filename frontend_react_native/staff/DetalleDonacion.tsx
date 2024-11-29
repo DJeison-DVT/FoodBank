@@ -3,8 +3,8 @@ import React from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, Button, TouchableOpacity } from 'react-native';
 import Icon from "react-native-vector-icons/MaterialIcons";
 
-const DetalleDonacion = ({ route, navigation }: { route: any; navigation: any }) => {
-  const { donation }: { donation: Donation } = route.params;
+const DetalleDonacion = ({ route, navigation }: any) => {
+  const { donation, onApprove, onReject }: { donation: Donation; onApprove: (id: number) => void; onReject: (id: number) => void } = route.params;
 
   type DonationType = 'Medicine' | 'Food' | 'Clothes';
   type DonationStatus = 'BeingModified' | 'Completed' | 'Pending' | 'Approved' | 'Rejected';
@@ -21,13 +21,13 @@ const DetalleDonacion = ({ route, navigation }: { route: any; navigation: any })
   };
 
   const handleApprove = () => {
-    // Add logic for approving the donation
-    console.log("Donation approved", donation.ID);
+    onApprove(donation.ID);
+    navigation.goBack();
   };
 
   const handleReject = () => {
-    // Add logic for rejecting the donation
-    console.log("Donation rejected", donation.ID);
+    onReject(donation.ID);
+    navigation.goBack();
   };
 
   return (
