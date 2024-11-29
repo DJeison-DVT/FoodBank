@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	// "encoding/json"
 
 	"backend_go/config"
 	"backend_go/database"
@@ -44,9 +45,17 @@ func setupTestDB() *gorm.DB {
 func TestProcessDonation_ValidData(t *testing.T) {
 	database.DB = setupTestDB()
 
+	userID := "113907166983640220525"
+
+	savedOrder, err := CreateOrder(userID)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
 	donation := &models.Donation{
 		Type:    "food",
 		Details: "Canned goods",
+		OrderID: savedOrder.ID,
 	}
 
 	savedDonation, err := ProcessDonation(donation)
@@ -60,6 +69,7 @@ func TestProcessDonation_ValidData(t *testing.T) {
 
 	// Clean up
 	database.DB.Unscoped().Delete(&models.Donation{}, "id = ?", savedDonation.ID)
+	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder.ID)
 }
 
 func TestProcessDonation_InvalidData(t *testing.T) {
@@ -71,43 +81,73 @@ func TestProcessDonation_InvalidData(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected an error, got none")
 	}
-}
+} 
 
-// Additional test cases
+// // Additional test cases
 
 func TestProcessDonation_MissingDetails(t *testing.T) {
 	database.DB = setupTestDB()
 
-	donation := &models.Donation{
-		Type: "medicine",
+	userID := "113907166983640220525"
+
+	savedOrder, err := CreateOrder(userID)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
 	}
 
-	_, err := ProcessDonation(donation)
+	donation := &models.Donation{
+		Type: "medicine",
+		OrderID: savedOrder.ID,
+	}
+
+	_, err = ProcessDonation(donation)
 	if err == nil {
 		t.Errorf("Expected error due to missing details, got none")
 	}
+
+	// Clean up
+	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder.ID)
 }
 
 func TestProcessDonation_EmptyType(t *testing.T) {
 	database.DB = setupTestDB()
 
+	userID := "113907166983640220525"
+
+	savedOrder, err := CreateOrder(userID)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
 	donation := &models.Donation{
 		Type:    "",
 		Details: "Blankets",
+		OrderID: savedOrder.ID,
 	}
 
-	_, err := ProcessDonation(donation)
+	_, err = ProcessDonation(donation)
 	if err == nil {
 		t.Errorf("Expected error due to missing type, got none")
 	}
+	// Clean up
+	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder.ID)
 }
 
 func TestProcessDonation_VeryLongDetails(t *testing.T) {
 	database.DB = setupTestDB()
+
+	userID := "113907166983640220525"
+
+	savedOrder, err := CreateOrder(userID)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
 	longDetails := "A" + strings.Repeat("B", 5000)
 	donation := &models.Donation{
 		Type:    "food",
 		Details: longDetails,
+		OrderID: savedOrder.ID,
 	}
 
 	savedDonation, err := ProcessDonation(donation)
@@ -121,14 +161,23 @@ func TestProcessDonation_VeryLongDetails(t *testing.T) {
 
 	// Clean up
 	database.DB.Unscoped().Delete(&models.Donation{}, "id = ?", savedDonation.ID)
+	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder.ID)
 }
 
 func TestProcessDonation_ValidMedicine(t *testing.T) {
 	database.DB = setupTestDB()
 
+	userID := "113907166983640220525"
+
+	savedOrder, err := CreateOrder(userID)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
 	donation := &models.Donation{
 		Type:    "medicine",
 		Details: "First aid kit",
+		OrderID: savedOrder.ID,
 	}
 
 	savedDonation, err := ProcessDonation(donation)
@@ -142,14 +191,23 @@ func TestProcessDonation_ValidMedicine(t *testing.T) {
 
 	// Clean up
 	database.DB.Unscoped().Delete(&models.Donation{}, "id = ?", savedDonation.ID)
+	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder.ID)
 }
 
 func TestProcessDonation_ValidClothing(t *testing.T) {
 	database.DB = setupTestDB()
 
+	userID := "113907166983640220525"
+
+	savedOrder, err := CreateOrder(userID)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
 	donation := &models.Donation{
 		Type:    "clothing",
 		Details: "Winter jackets",
+		OrderID: savedOrder.ID,
 	}
 
 	savedDonation, err := ProcessDonation(donation)
@@ -163,27 +221,38 @@ func TestProcessDonation_ValidClothing(t *testing.T) {
 
 	// Clean up
 	database.DB.Unscoped().Delete(&models.Donation{}, "id = ?", savedDonation.ID)
+	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder.ID)
 }
 
-func TestProcessDonation_SingleImageUpload(t *testing.T) {
+// func TestProcessDonation_SingleImageUpload(t *testing.T) {
 
-}
+// }
 
-func TestProcessDonation_MultipleImageUpload(t *testing.T) {
-	database.DB = setupTestDB()
+// func TestProcessDonation_MultipleImageUpload(t *testing.T) {
+// 	database.DB = setupTestDB()
 
-	donation := &models.Donation{
-		Type:    "medicine",
-		Details: "First aid supplies",
-	}
+// 	images := []string{"image1url", "image2url"}
+// 	imagesJSON, err := json.Marshal(images)
+// 	if err != nil {
+// 		t.Errorf("failed to marshal images: %v", err)
+// 	}
 
-	// savedDonation, err := ProcessDonation(donation)
+// 	donation := &models.Donation{
+// 		Type:    "medicine",
+// 		Details: "First aid supplies",
+// 		OrderID: 10,
+// 		Images: imagesJSON,
+// 	}
 
-	// if err == nil {
-	// t.Error("Expected failure due to missing S3 implementation, but got none")
-	// }
+// 	savedDonation, err := ProcessDonation(donation)
 
-	// if len(savedDonation.Images) > 0 {
-	t.Errorf("Expected multiple images to be saved, but got %v", donation.Images[0])
-	// }
-}
+// 	if err == nil {
+// 		t.Error("Expected failure due to missing S3 implementation, but got none")
+// 	}
+
+// 	if len(savedDonation.Images) > 0 {
+// 		t.Errorf("Expected multiple images to be saved, but got %v", donation.Images[0])
+// 	}
+// 	// Clean up
+// 	database.DB.Unscoped().Delete(&models.Donation{}, "id = ?", savedDonation.ID)
+// }

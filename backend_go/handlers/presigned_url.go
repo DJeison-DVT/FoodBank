@@ -13,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
 const expirationTime = 15 * time.Minute
@@ -83,6 +84,8 @@ func generatePresignedURL(s3Client *s3.Client, fileName string) (string, error) 
 	req := &s3.PutObjectInput{
 		Bucket: aws.String(envconfig.S3Bucket),
 		Key:    aws.String(fileName),
+		ContentType: aws.String("image/jpeg"), // Specify the content type
+        ACL:         types.ObjectCannedACLPublicRead,
 	}
 
 	presignedURL, err := presignClient.PresignPutObject(context.Background(), req, s3.WithPresignExpires(expirationTime))

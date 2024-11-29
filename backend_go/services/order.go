@@ -181,6 +181,20 @@ func ScheduleOrder(order *models.Order, pickupDate, pickupTime string) error {
 }
 
 func UpdateOrderStatus(order *models.Order, status models.OrderStatus) error {
+	// Validate the status
+	validStatuses := map[models.OrderStatus]bool{
+		models.StatusBeingModified:     true,
+		models.StatusNeedsToBeChecked:  true,
+		models.StatusNeedsToBeVerified: true,
+		models.StatusVerified:          true,
+		models.StatusScheduled:         true,
+		models.StatusPickedUp:          true,
+	}
+
+	if !validStatuses[status] {
+		return fmt.Errorf("invalid status: %s", status)
+	}
+
 	order.Status = status
 	if err := updateOrder(database.DB, order); err != nil {
 		return err

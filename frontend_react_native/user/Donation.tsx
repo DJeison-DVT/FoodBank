@@ -124,7 +124,8 @@ export default function Donation({ route, navigation }: { route: any; navigation
             const response = await fetch(uploadUrl, {
                 method: "PUT",
                 headers: {
-                    "Content-Type": "image/jpeg", // Adjust MIME type if necessary
+                    "Content-Type": "image/jpeg",
+                    "x-amz-acl": "public-read", // Include the ACL header
                 },
                 body: await fetch(imageUri).then(res => res.blob()), // Fetch the image blob
             });

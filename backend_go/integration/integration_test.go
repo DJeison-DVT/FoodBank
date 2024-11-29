@@ -42,6 +42,8 @@ func setupIntegrationTestDB() *gorm.DB {
 	return db
 }
 
+// Donations
+
 func TestIntegration_ValidDonation(t *testing.T) {
 	database.DB = setupIntegrationTestDB()
 
@@ -119,3 +121,8 @@ func TestIntegration_InvalidDonation(t *testing.T) {
 	// Clean up
 	database.DB.Exec("DELETE FROM donations")
 }
+
+
+// Orders
+
+// Users
