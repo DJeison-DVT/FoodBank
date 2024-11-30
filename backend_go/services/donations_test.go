@@ -45,9 +45,24 @@ func setupTestDB() *gorm.DB {
 func TestProcessDonation_ValidData(t *testing.T) {
 	database.DB = setupTestDB()
 
-	userID := "113907166983640220525"
+	userID := "111111111111111111111111111"
+	userEmail := "dummy@gmail.com"
+	userName := "dummy"
+	userPicture := "thisisapictureurl.com"
 
-	savedOrder, err := CreateOrder(userID)
+	userFields := map[string]interface{}{
+		"id":      userID,
+		"email":   userEmail,
+		"name":    userName,
+		"picture": userPicture,
+	}
+
+	savedUser, err := CreateUser(userFields)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	savedOrder, err := CreateOrder(savedUser.ID)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -70,6 +85,7 @@ func TestProcessDonation_ValidData(t *testing.T) {
 	// Clean up
 	database.DB.Unscoped().Delete(&models.Donation{}, "id = ?", savedDonation.ID)
 	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder.ID)
+	database.DB.Unscoped().Delete(&models.User{}, "id = ?", savedUser.ID)
 }
 
 func TestProcessDonation_InvalidData(t *testing.T) {
@@ -88,9 +104,24 @@ func TestProcessDonation_InvalidData(t *testing.T) {
 func TestProcessDonation_MissingDetails(t *testing.T) {
 	database.DB = setupTestDB()
 
-	userID := "113907166983640220525"
+	userID := "111111111111111111111111111"
+	userEmail := "dummy@gmail.com"
+	userName := "dummy"
+	userPicture := "thisisapictureurl.com"
 
-	savedOrder, err := CreateOrder(userID)
+	userFields := map[string]interface{}{
+		"id":      userID,
+		"email":   userEmail,
+		"name":    userName,
+		"picture": userPicture,
+	}
+
+	savedUser, err := CreateUser(userFields)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	savedOrder, err := CreateOrder(savedUser.ID)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -107,14 +138,30 @@ func TestProcessDonation_MissingDetails(t *testing.T) {
 
 	// Clean up
 	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder.ID)
+	database.DB.Unscoped().Delete(&models.User{}, "id = ?", savedUser.ID)
 }
 
 func TestProcessDonation_EmptyType(t *testing.T) {
 	database.DB = setupTestDB()
 
-	userID := "113907166983640220525"
+	userID := "111111111111111111111111111"
+	userEmail := "dummy@gmail.com"
+	userName := "dummy"
+	userPicture := "thisisapictureurl.com"
 
-	savedOrder, err := CreateOrder(userID)
+	userFields := map[string]interface{}{
+		"id":      userID,
+		"email":   userEmail,
+		"name":    userName,
+		"picture": userPicture,
+	}
+
+	savedUser, err := CreateUser(userFields)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	savedOrder, err := CreateOrder(savedUser.ID)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -131,14 +178,30 @@ func TestProcessDonation_EmptyType(t *testing.T) {
 	}
 	// Clean up
 	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder.ID)
+	database.DB.Unscoped().Delete(&models.User{}, "id = ?", savedUser.ID)
 }
 
 func TestProcessDonation_VeryLongDetails(t *testing.T) {
 	database.DB = setupTestDB()
 
-	userID := "113907166983640220525"
+	userID := "111111111111111111111111111"
+	userEmail := "dummy@gmail.com"
+	userName := "dummy"
+	userPicture := "thisisapictureurl.com"
 
-	savedOrder, err := CreateOrder(userID)
+	userFields := map[string]interface{}{
+		"id":      userID,
+		"email":   userEmail,
+		"name":    userName,
+		"picture": userPicture,
+	}
+
+	savedUser, err := CreateUser(userFields)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	savedOrder, err := CreateOrder(savedUser.ID)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -162,14 +225,30 @@ func TestProcessDonation_VeryLongDetails(t *testing.T) {
 	// Clean up
 	database.DB.Unscoped().Delete(&models.Donation{}, "id = ?", savedDonation.ID)
 	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder.ID)
+	database.DB.Unscoped().Delete(&models.User{}, "id = ?", savedUser.ID)
 }
 
 func TestProcessDonation_ValidMedicine(t *testing.T) {
 	database.DB = setupTestDB()
 
-	userID := "113907166983640220525"
+	userID := "111111111111111111111111111"
+	userEmail := "dummy@gmail.com"
+	userName := "dummy"
+	userPicture := "thisisapictureurl.com"
 
-	savedOrder, err := CreateOrder(userID)
+	userFields := map[string]interface{}{
+		"id":      userID,
+		"email":   userEmail,
+		"name":    userName,
+		"picture": userPicture,
+	}
+
+	savedUser, err := CreateUser(userFields)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	savedOrder, err := CreateOrder(savedUser.ID)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -192,14 +271,30 @@ func TestProcessDonation_ValidMedicine(t *testing.T) {
 	// Clean up
 	database.DB.Unscoped().Delete(&models.Donation{}, "id = ?", savedDonation.ID)
 	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder.ID)
+	database.DB.Unscoped().Delete(&models.User{}, "id = ?", savedUser.ID)
 }
 
 func TestProcessDonation_ValidClothing(t *testing.T) {
 	database.DB = setupTestDB()
 
-	userID := "113907166983640220525"
+	userID := "111111111111111111111111111"
+	userEmail := "dummy@gmail.com"
+	userName := "dummy"
+	userPicture := "thisisapictureurl.com"
 
-	savedOrder, err := CreateOrder(userID)
+	userFields := map[string]interface{}{
+		"id":      userID,
+		"email":   userEmail,
+		"name":    userName,
+		"picture": userPicture,
+	}
+
+	savedUser, err := CreateUser(userFields)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	savedOrder, err := CreateOrder(savedUser.ID)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -222,37 +317,5 @@ func TestProcessDonation_ValidClothing(t *testing.T) {
 	// Clean up
 	database.DB.Unscoped().Delete(&models.Donation{}, "id = ?", savedDonation.ID)
 	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder.ID)
+	database.DB.Unscoped().Delete(&models.User{}, "id = ?", savedUser.ID)
 }
-
-// func TestProcessDonation_SingleImageUpload(t *testing.T) {
-
-// }
-
-// func TestProcessDonation_MultipleImageUpload(t *testing.T) {
-// 	database.DB = setupTestDB()
-
-// 	images := []string{"image1url", "image2url"}
-// 	imagesJSON, err := json.Marshal(images)
-// 	if err != nil {
-// 		t.Errorf("failed to marshal images: %v", err)
-// 	}
-
-// 	donation := &models.Donation{
-// 		Type:    "medicine",
-// 		Details: "First aid supplies",
-// 		OrderID: 10,
-// 		Images: imagesJSON,
-// 	}
-
-// 	savedDonation, err := ProcessDonation(donation)
-
-// 	if err == nil {
-// 		t.Error("Expected failure due to missing S3 implementation, but got none")
-// 	}
-
-// 	if len(savedDonation.Images) > 0 {
-// 		t.Errorf("Expected multiple images to be saved, but got %v", donation.Images[0])
-// 	}
-// 	// Clean up
-// 	database.DB.Unscoped().Delete(&models.Donation{}, "id = ?", savedDonation.ID)
-// }

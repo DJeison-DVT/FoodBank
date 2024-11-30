@@ -10,9 +10,24 @@ import (
 func TestCreateOrder_ValidData(t *testing.T) {
 	database.DB = setupTestDB()
 
-	userID := "113907166983640220525"
+	userID := "111111111111111111111111111"
+	userEmail := "dummy@gmail.com"
+	userName := "dummy"
+	userPicture := "thisisapictureurl.com"
 
-	savedOrder, err := CreateOrder(userID)
+	userFields := map[string]interface{}{
+		"id":      userID,
+		"email":   userEmail,
+		"name":    userName,
+		"picture": userPicture,
+	}
+
+	savedUser, err := CreateUser(userFields)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	savedOrder, err := CreateOrder(savedUser.ID)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -23,6 +38,7 @@ func TestCreateOrder_ValidData(t *testing.T) {
 
 	// Clean up
 	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder.ID)
+	database.DB.Unscoped().Delete(&models.User{}, "id = ?", savedUser.ID)
 }
 
 func TestCreateOrder_InvalidData(t *testing.T) {
@@ -40,9 +56,24 @@ func TestCreateOrder_InvalidData(t *testing.T) {
 func TestGetOrder_ValidData(t *testing.T) {
 	database.DB = setupTestDB()
 
-	userID := "113907166983640220525"
+	userID := "111111111111111111111111111"
+	userEmail := "dummy@gmail.com"
+	userName := "dummy"
+	userPicture := "thisisapictureurl.com"
 
-	savedOrder, err := CreateOrder(userID)
+	userFields := map[string]interface{}{
+		"id":      userID,
+		"email":   userEmail,
+		"name":    userName,
+		"picture": userPicture,
+	}
+
+	savedUser, err := CreateUser(userFields)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	savedOrder, err := CreateOrder(savedUser.ID)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -58,14 +89,30 @@ func TestGetOrder_ValidData(t *testing.T) {
 
 	// Clean up
 	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder.ID)
+	database.DB.Unscoped().Delete(&models.User{}, "id = ?", savedUser.ID)
 }
 
 func TestGetOrder_InvalidData(t *testing.T) {
 	database.DB = setupTestDB()
 
-	userID := "113907166983640220525"
+	userID := "111111111111111111111111111"
+	userEmail := "dummy@gmail.com"
+	userName := "dummy"
+	userPicture := "thisisapictureurl.com"
 
-	savedOrder, err := CreateOrder(userID)
+	userFields := map[string]interface{}{
+		"id":      userID,
+		"email":   userEmail,
+		"name":    userName,
+		"picture": userPicture,
+	}
+
+	savedUser, err := CreateUser(userFields)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	savedOrder, err := CreateOrder(savedUser.ID)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -76,15 +123,32 @@ func TestGetOrder_InvalidData(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected an error, got none")
 	}
+
+	database.DB.Unscoped().Delete(&models.User{}, "id = ?", savedUser.ID)
 }
 
 // Get User Active Order
 func TestGetUserActiveOrder_ValidData(t *testing.T) { // mark
 	database.DB = setupTestDB()
 
-	userID := "113907166983640220525"
+	userID := "111111111111111111111111111"
+	userEmail := "dummy@gmail.com"
+	userName := "dummy"
+	userPicture := "thisisapictureurl.com"
 
-	savedOrder, err := CreateOrder(userID)
+	userFields := map[string]interface{}{
+		"id":      userID,
+		"email":   userEmail,
+		"name":    userName,
+		"picture": userPicture,
+	}
+
+	savedUser, err := CreateUser(userFields)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	savedOrder, err := CreateOrder(savedUser.ID)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -112,14 +176,30 @@ func TestGetUserActiveOrder_ValidData(t *testing.T) { // mark
 	// Clean up
 	database.DB.Unscoped().Delete(&models.Donation{}, "id = ?", savedDonation.ID)
 	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", getOrder.ID)
+	database.DB.Unscoped().Delete(&models.User{}, "id = ?", savedUser.ID)
 }
 
 func TestGetUserActiveOrder_InvalidData(t *testing.T) {
 	database.DB = setupTestDB()
 
-	userID := "113907166983640220525"
+	userID := "111111111111111111111111111"
+	userEmail := "dummy@gmail.com"
+	userName := "dummy"
+	userPicture := "thisisapictureurl.com"
 
-	savedOrder, err := CreateOrder(userID)
+	userFields := map[string]interface{}{
+		"id":      userID,
+		"email":   userEmail,
+		"name":    userName,
+		"picture": userPicture,
+	}
+
+	savedUser, err := CreateUser(userFields)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	savedOrder, err := CreateOrder(savedUser.ID)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -130,15 +210,31 @@ func TestGetUserActiveOrder_InvalidData(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected an error, got no	ne and %v", getOrder)
 	}
+	database.DB.Unscoped().Delete(&models.User{}, "id = ?", savedUser.ID)
 }
 
 // Update Order Status
 func TestUpdateOrderStatus_ValidData(t *testing.T) {
 	database.DB = setupTestDB()
 
-	userID := "113907166983640220525"
+	userID := "111111111111111111111111111"
+	userEmail := "dummy@gmail.com"
+	userName := "dummy"
+	userPicture := "thisisapictureurl.com"
 
-	savedOrder, err := CreateOrder(userID)
+	userFields := map[string]interface{}{
+		"id":      userID,
+		"email":   userEmail,
+		"name":    userName,
+		"picture": userPicture,
+	}
+
+	savedUser, err := CreateUser(userFields)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	savedOrder, err := CreateOrder(savedUser.ID)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -159,14 +255,30 @@ func TestUpdateOrderStatus_ValidData(t *testing.T) {
 
 	// Clean up
 	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder.ID)
+	database.DB.Unscoped().Delete(&models.User{}, "id = ?", savedUser.ID)
 }
 
 func TestUpdateOrderStatus_InvalidData(t *testing.T) {
 	database.DB = setupTestDB()
 
-	userID := "113907166983640220525"
+	userID := "111111111111111111111111111"
+	userEmail := "dummy@gmail.com"
+	userName := "dummy"
+	userPicture := "thisisapictureurl.com"
 
-	savedOrder, err := CreateOrder(userID)
+	userFields := map[string]interface{}{
+		"id":      userID,
+		"email":   userEmail,
+		"name":    userName,
+		"picture": userPicture,
+	}
+
+	savedUser, err := CreateUser(userFields)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	savedOrder, err := CreateOrder(savedUser.ID)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -178,15 +290,31 @@ func TestUpdateOrderStatus_InvalidData(t *testing.T) {
 
 	// Clean up
 	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder.ID)
+	database.DB.Unscoped().Delete(&models.User{}, "id = ?", savedUser.ID)
 }
 
 // Verify Order
 func TestVerifyOrder_ValidData(t *testing.T) {
 	database.DB = setupTestDB()
 
-	userID := "113907166983640220525"
+	userID := "111111111111111111111111111"
+	userEmail := "dummy@gmail.com"
+	userName := "dummy"
+	userPicture := "thisisapictureurl.com"
 
-	savedOrder, err := CreateOrder(userID)
+	userFields := map[string]interface{}{
+		"id":      userID,
+		"email":   userEmail,
+		"name":    userName,
+		"picture": userPicture,
+	}
+
+	savedUser, err := CreateUser(userFields)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	savedOrder, err := CreateOrder(savedUser.ID)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -207,15 +335,31 @@ func TestVerifyOrder_ValidData(t *testing.T) {
 
 	// Clean up
 	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder.ID)
+	database.DB.Unscoped().Delete(&models.User{}, "id = ?", savedUser.ID)
 }
 
 // Schedule Order
 func TestScheduleOrder_ValidData(t *testing.T) {
 	database.DB = setupTestDB()
 
-	userID := "113907166983640220525"
+	userID := "111111111111111111111111111"
+	userEmail := "dummy@gmail.com"
+	userName := "dummy"
+	userPicture := "thisisapictureurl.com"
 
-	savedOrder, err := CreateOrder(userID)
+	userFields := map[string]interface{}{
+		"id":      userID,
+		"email":   userEmail,
+		"name":    userName,
+		"picture": userPicture,
+	}
+
+	savedUser, err := CreateUser(userFields)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	savedOrder, err := CreateOrder(savedUser.ID)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -241,15 +385,31 @@ func TestScheduleOrder_ValidData(t *testing.T) {
 
 	// Clean up
 	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder.ID)
+	database.DB.Unscoped().Delete(&models.User{}, "id = ?", savedUser.ID)
 }
 
 // Get Verification Pending Orders
 func TestGetVerificationPendingOrders_ValidData(t *testing.T) {
 	database.DB = setupTestDB()
 
-	userID := "113907166983640220525"
+	userID := "111111111111111111111111111"
+	userEmail := "dummy@gmail.com"
+	userName := "dummy"
+	userPicture := "thisisapictureurl.com"
 
-	savedOrder, err := CreateOrder(userID)
+	userFields := map[string]interface{}{
+		"id":      userID,
+		"email":   userEmail,
+		"name":    userName,
+		"picture": userPicture,
+	}
+
+	savedUser, err := CreateUser(userFields)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	savedOrder, err := CreateOrder(savedUser.ID)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -282,15 +442,31 @@ func TestGetVerificationPendingOrders_ValidData(t *testing.T) {
 	// Clean up
 	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder.ID)
 	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder2.ID)
+	database.DB.Unscoped().Delete(&models.User{}, "id = ?", savedUser.ID)
 }
 
 // Get Schedule Pending Orders
 func TestGetSchedulePendingOrders_ValidData(t *testing.T) {
 	database.DB = setupTestDB()
 
-	userID := "113907166983640220525"
+	userID := "111111111111111111111111111"
+	userEmail := "dummy@gmail.com"
+	userName := "dummy"
+	userPicture := "thisisapictureurl.com"
 
-	savedOrder, err := CreateOrder(userID)
+	userFields := map[string]interface{}{
+		"id":      userID,
+		"email":   userEmail,
+		"name":    userName,
+		"picture": userPicture,
+	}
+
+	savedUser, err := CreateUser(userFields)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	savedOrder, err := CreateOrder(savedUser.ID)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -323,15 +499,31 @@ func TestGetSchedulePendingOrders_ValidData(t *testing.T) {
 	// Clean up
 	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder.ID)
 	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder2.ID)
+	database.DB.Unscoped().Delete(&models.User{}, "id = ?", savedUser.ID)
 }
 
 // Get Pickup Pending Orders
 func TestGetPickupPendingOrders_ValidData(t *testing.T) {
 	database.DB = setupTestDB()
 
-	userID := "113907166983640220525"
+	userID := "111111111111111111111111111"
+	userEmail := "dummy@gmail.com"
+	userName := "dummy"
+	userPicture := "thisisapictureurl.com"
 
-	savedOrder, err := CreateOrder(userID)
+	userFields := map[string]interface{}{
+		"id":      userID,
+		"email":   userEmail,
+		"name":    userName,
+		"picture": userPicture,
+	}
+
+	savedUser, err := CreateUser(userFields)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	savedOrder, err := CreateOrder(savedUser.ID)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -364,15 +556,31 @@ func TestGetPickupPendingOrders_ValidData(t *testing.T) {
 	// Clean up
 	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder.ID)
 	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder2.ID)
+	database.DB.Unscoped().Delete(&models.User{}, "id = ?", savedUser.ID)
 }
 
 // Get Completed Orders
 func TestGetCompletedOrders_ValidData(t *testing.T) {
 	database.DB = setupTestDB()
 
-	userID := "113907166983640220525"
+	userID := "111111111111111111111111111"
+	userEmail := "dummy@gmail.com"
+	userName := "dummy"
+	userPicture := "thisisapictureurl.com"
 
-	savedOrder, err := CreateOrder(userID)
+	userFields := map[string]interface{}{
+		"id":      userID,
+		"email":   userEmail,
+		"name":    userName,
+		"picture": userPicture,
+	}
+
+	savedUser, err := CreateUser(userFields)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	savedOrder, err := CreateOrder(savedUser.ID)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -405,15 +613,31 @@ func TestGetCompletedOrders_ValidData(t *testing.T) {
 	// Clean up
 	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder.ID)
 	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder2.ID)
+	database.DB.Unscoped().Delete(&models.User{}, "id = ?", savedUser.ID)
 }
 
 // Reject Order
 func TestRejectOrder_ValidData(t *testing.T) {
 	database.DB = setupTestDB()
 
-	userID := "113907166983640220525"
+	userID := "111111111111111111111111111"
+	userEmail := "dummy@gmail.com"
+	userName := "dummy"
+	userPicture := "thisisapictureurl.com"
 
-	savedOrder, err := CreateOrder(userID)
+	userFields := map[string]interface{}{
+		"id":      userID,
+		"email":   userEmail,
+		"name":    userName,
+		"picture": userPicture,
+	}
+
+	savedUser, err := CreateUser(userFields)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	savedOrder, err := CreateOrder(savedUser.ID)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -446,15 +670,31 @@ func TestRejectOrder_ValidData(t *testing.T) {
 	// Clean up
 	database.DB.Unscoped().Delete(&models.Donation{}, "id = ?", savedDonation.ID)
 	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder.ID)
+	database.DB.Unscoped().Delete(&models.User{}, "id = ?", savedUser.ID)
 }
 
 // Has Rejected Donations
 func TestHasRejectedDonations_ValidData(t *testing.T) {
 	database.DB = setupTestDB()
 
-	userID := "113907166983640220525"
+	userID := "111111111111111111111111111"
+	userEmail := "dummy@gmail.com"
+	userName := "dummy"
+	userPicture := "thisisapictureurl.com"
 
-	savedOrder, err := CreateOrder(userID)
+	userFields := map[string]interface{}{
+		"id":      userID,
+		"email":   userEmail,
+		"name":    userName,
+		"picture": userPicture,
+	}
+
+	savedUser, err := CreateUser(userFields)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	savedOrder, err := CreateOrder(savedUser.ID)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -488,4 +728,5 @@ func TestHasRejectedDonations_ValidData(t *testing.T) {
 	// Clean up
 	database.DB.Unscoped().Delete(&models.Donation{}, "id = ?", savedDonation.ID)
 	database.DB.Unscoped().Delete(&models.Order{}, "id = ?", savedOrder.ID)
+	database.DB.Unscoped().Delete(&models.User{}, "id = ?", savedUser.ID)
 }
